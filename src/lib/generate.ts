@@ -18,7 +18,7 @@ if (typeof window !== "undefined") {
   throw new Error("src/lib/generate.ts must not be imported from the client.");
 }
 
-export const PROMPT_VERSION = "listing-generator-v4";
+export const PROMPT_VERSION = "listing-generator-v5";
 const MODEL = "claude-sonnet-4-5";
 const MAX_TOKENS = 2048;
 const FEATURES_WORD_LIMIT = 500;
@@ -148,8 +148,8 @@ const RETURN_VARIANTS_TOOL: Anthropic.Tool = {
           properties: {
             label: {
               type: "string",
-              enum: ["Professional", "Warm", "Luxury"],
-              description: "Tone label: exactly 'Professional', 'Warm', or 'Luxury'.",
+              enum: ["Professional", "Warm", "Story"],
+              description: "Tone label: exactly 'Professional', 'Warm', or 'Story'.",
             },
             text: {
               type: "string",

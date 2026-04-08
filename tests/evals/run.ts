@@ -22,7 +22,26 @@ import { generate, GenerateError } from "../../src/lib/generate";
 import { fixtures, type Fixture } from "./fixtures";
 import type { Variant } from "../../src/lib/types";
 
-const BANNED_PHRASES = ["must-see", "must see", "won't last", "one-of-a-kind", "one of a kind"];
+const BANNED_PHRASES = [
+  "must-see",
+  "must see",
+  "won't last",
+  "one-of-a-kind",
+  "one of a kind",
+  // v5 formula phrases — see listing-generator-v5.md "No formula phrases"
+  "combines",
+  "boasts",
+  "nestled",
+  "tucked away",
+  "perfect for",
+  "ideal for",
+  "functional living",
+  "modern living",
+  "today's lifestyle",
+  "this stunning",
+  "this beautiful",
+  "this exquisite",
+];
 // v4 makes length adaptive: sparse inputs are allowed to produce shorter
 // variants rather than padding with invented filler. Floor lowered from 100.
 const WORD_COUNT_MIN = 60;

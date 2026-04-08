@@ -9,7 +9,7 @@ import { useState } from "react";
 import ListingForm from "@/components/ListingForm";
 import VariantCard from "@/components/VariantCard";
 import HistorySidebar from "@/components/HistorySidebar";
-import { appendGeneration } from "@/lib/history";
+import { addGeneration } from "@/lib/history";
 import type {
   ListingInput,
   Variant,
@@ -54,7 +54,7 @@ export default function Home() {
         input,
         variants: data.variants,
       };
-      appendGeneration(gen);
+      addGeneration(gen);
       setHistoryRefresh((k) => k + 1);
     } catch (err) {
       const msg =
