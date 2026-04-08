@@ -73,8 +73,8 @@ export default function Home() {
         <header className="mb-8">
           <h1 className="text-2xl font-bold">Listing Generator</h1>
           <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-            Fill in the property details, pick a tone, get three MLS-ready
-            description variants.
+            Fill in the property details and get three MLS-ready description
+            variants — one in each tone.
           </p>
         </header>
 

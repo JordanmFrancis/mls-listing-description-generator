@@ -88,4 +88,20 @@ export const fixtures: Fixture[] = [
     },
     shouldMention: ["hardwood", "garden"],
   },
+  {
+    // Regression case from real user input — v3 hallucinated schools, neighborhood,
+    // energy efficiency, and "modern building standards" from this. v4 should
+    // produce shorter variants that stick to the provided facts.
+    label: "Sparse input — anti-hallucination regression",
+    input: {
+      address: "3646 Ohio 47, Bellefontaine",
+      beds: 4,
+      baths: 2,
+      sqft: 2400,
+      lotSize: "0.1 acres",
+      yearBuilt: 2025,
+      features: "Newer build in Bellefontaine, great for kids and family. Turnkey, great value.",
+    },
+    shouldMention: ["bellefontaine", "turnkey"],
+  },
 ];
