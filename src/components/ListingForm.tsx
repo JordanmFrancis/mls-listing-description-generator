@@ -9,7 +9,7 @@
  */
 
 import { useState, type FormEvent } from "react";
-import type { ListingInput, Tone } from "@/lib/types";
+import type { ListingInput } from "@/lib/types";
 
 interface Props {
   onSubmit: (input: ListingInput) => void;
@@ -19,12 +19,6 @@ interface Props {
 const FEATURES_SOFT_WARN = 400; // words — soft warning threshold in UI
 const FEATURES_HARD_LIMIT = 500; // matches server-side cap in generate.ts
 
-const TONES: { value: Tone; label: string; description: string }[] = [
-  { value: "professional", label: "Professional", description: "Factual, polished" },
-  { value: "warm", label: "Warm", description: "Inviting, lifestyle" },
-  { value: "luxury", label: "Luxury", description: "Elevated, exclusive" },
-];
-
 export default function ListingForm({ onSubmit, isGenerating }: Props) {
   const [address, setAddress] = useState("");
   const [beds, setBeds] = useState("");
@@ -33,7 +27,6 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
   const [lotSize, setLotSize] = useState("");
   const [yearBuilt, setYearBuilt] = useState("");
   const [features, setFeatures] = useState("");
-  const [tone, setTone] = useState<Tone>("professional");
 
   const featureWordCount = features.trim()
     ? features.trim().split(/\s+/).length
@@ -54,7 +47,6 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
       lotSize: lotSize.trim() || null,
       yearBuilt: yearBuilt.trim() ? parseInt(yearBuilt, 10) : null,
       features: features.trim(),
-      tone,
     };
     onSubmit(input);
   }
@@ -196,41 +188,9 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
         </div>
       </div>
 
-      <fieldset>
-        <legend className="block text-sm font-medium mb-2">Tone</legend>
-        <div className="grid grid-cols-3 gap-3">
-          {TONES.map((t) => (
-            <label
-              key={t.value}
-              className={`cursor-pointer rounded-md border px-3 py-2 text-sm transition-colors ${
-                tone === t.value
-                  ? "border-zinc-900 dark:border-zinc-100 bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 hover:border-zinc-500"
-              }`}
-            >
-              <input
-                type="radio"
-                name="tone"
-                value={t.value}
-                checked={tone === t.value}
-                onChange={() => setTone(t.value)}
-                className="sr-only"
-                disabled={isGenerating}
-              />
-              <div className="font-medium">{t.label}</div>
-              <div
-                className={`text-xs ${
-                  tone === t.value
-                    ? "text-zinc-300 dark:text-zinc-600"
-                    : "text-zinc-500 dark:text-zinc-400"
-                }`}
-              >
-                {t.description}
-              </div>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">
+        You&apos;ll get three variants — Professional, Warm, and Luxury — so you can pick the voice that fits the listing.
+      </p>
 
       <button
         type="submit"

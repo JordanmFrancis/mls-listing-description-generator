@@ -19,7 +19,7 @@ export interface Fixture {
 
 export const fixtures: Fixture[] = [
   {
-    label: "Standard suburban family home (professional)",
+    label: "Standard suburban family home",
     input: {
       address: "1428 Elmwood Drive, Springfield",
       beds: 3,
@@ -29,12 +29,11 @@ export const fixtures: Fixture[] = [
       yearBuilt: 2012,
       features:
         "Open-concept kitchen with quartz counters and stainless appliances, hardwood floors on the main level, primary suite with walk-in closet, finished basement, fenced backyard with patio, two-car attached garage, quiet cul-de-sac, walking distance to Lincoln Elementary.",
-      tone: "professional",
     },
     shouldMention: ["cul-de-sac", "quartz"],
   },
   {
-    label: "Historic bungalow with minimal info (warm)",
+    label: "Historic bungalow with minimal info",
     input: {
       address: "82 Cherry Lane, Maplewood",
       beds: 2,
@@ -44,12 +43,11 @@ export const fixtures: Fixture[] = [
       yearBuilt: 1926,
       features:
         "Original hardwood floors, built-in bookshelves, clawfoot tub in the bathroom, front porch with swing, mature oak trees in the front yard, updated kitchen with farmhouse sink, walkable neighborhood.",
-      tone: "warm",
     },
     shouldMention: ["1926", "porch"],
   },
   {
-    label: "Luxury waterfront property (luxury)",
+    label: "Luxury waterfront property",
     input: {
       address: "7 Harbor Point Road, Kennebunkport",
       beds: 5,
@@ -59,12 +57,11 @@ export const fixtures: Fixture[] = [
       yearBuilt: 2018,
       features:
         "Private deepwater dock with 60-foot slip, floor-to-ceiling windows overlooking the bay, chef's kitchen with Wolf range and Sub-Zero refrigerator, primary suite with fireplace and ocean-view terrace, heated infinity pool, four-car garage, wine cellar, smart home automation, professionally landscaped grounds.",
-      tone: "luxury",
     },
     shouldMention: ["dock", "pool"],
   },
   {
-    label: "Downtown condo (professional)",
+    label: "Downtown condo",
     input: {
       address: "450 Market Street, Unit 1802, Portland",
       beds: 1,
@@ -74,12 +71,11 @@ export const fixtures: Fixture[] = [
       yearBuilt: 2019,
       features:
         "Floor-to-ceiling windows with city and river views, engineered hardwood, quartz kitchen counters, in-unit washer/dryer, building amenities include gym, rooftop deck, and 24-hour concierge, one deeded parking space, walkable to restaurants and transit.",
-      tone: "professional",
     },
     shouldMention: ["concierge", "rooftop"],
   },
   {
-    label: "Starter home on small lot (warm)",
+    label: "Starter home on small lot",
     input: {
       address: "215 Birch Street, Cedar Falls",
       beds: 2,
@@ -89,8 +85,23 @@ export const fixtures: Fixture[] = [
       yearBuilt: 1958,
       features:
         "Updated kitchen with new appliances, fresh paint throughout, refinished original hardwood floors, one-car detached garage, small fenced backyard with garden beds, quiet residential street, close to downtown shops.",
-      tone: "warm",
     },
     shouldMention: ["hardwood", "garden"],
+  },
+  {
+    // Regression case from real user input — v3 hallucinated schools, neighborhood,
+    // energy efficiency, and "modern building standards" from this. v4 should
+    // produce shorter variants that stick to the provided facts.
+    label: "Sparse input — anti-hallucination regression",
+    input: {
+      address: "3646 Ohio 47, Bellefontaine",
+      beds: 4,
+      baths: 2,
+      sqft: 2400,
+      lotSize: "0.1 acres",
+      yearBuilt: 2025,
+      features: "Newer build in Bellefontaine, great for kids and family. Turnkey, great value.",
+    },
+    shouldMention: ["bellefontaine", "turnkey"],
   },
 ];

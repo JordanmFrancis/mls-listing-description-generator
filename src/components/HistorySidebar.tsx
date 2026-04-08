@@ -89,10 +89,8 @@ export default function HistorySidebar({ refreshKey }: Props) {
                       <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
                         {gen.input.address}
                       </div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 flex gap-2">
-                        <span className="capitalize">{gen.input.tone}</span>
-                        <span>•</span>
-                        <span>{formatRelativeTime(gen.createdAt)}</span>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {formatRelativeTime(gen.createdAt)}
                       </div>
                     </button>
                     {isExpanded && (

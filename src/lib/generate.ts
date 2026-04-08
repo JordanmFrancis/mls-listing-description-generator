@@ -12,13 +12,13 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import Anthropic from "@anthropic-ai/sdk";
-import type { ListingInput, Variant, Tone } from "./types";
+import type { ListingInput, Variant } from "./types";
 
 if (typeof window !== "undefined") {
   throw new Error("src/lib/generate.ts must not be imported from the client.");
 }
 
-export const PROMPT_VERSION = "listing-generator-v2";
+export const PROMPT_VERSION = "listing-generator-v4";
 const MODEL = "claude-sonnet-4-5";
 const MAX_TOKENS = 2048;
 const FEATURES_WORD_LIMIT = 500;
@@ -41,8 +41,6 @@ export class GenerateError extends Error {
     this.status = status;
   }
 }
-
-const VALID_TONES: readonly Tone[] = ["professional", "warm", "luxury"] as const;
 
 /**
  * Validates a ListingInput. Throws GenerateError(400) on invalid input.
@@ -74,13 +72,6 @@ export function validateInput(input: unknown): ListingInput {
       400
     );
   }
-  if (typeof i.tone !== "string" || !VALID_TONES.includes(i.tone as Tone)) {
-    throw new GenerateError(
-      `Tone must be one of: ${VALID_TONES.join(", ")}.`,
-      400
-    );
-  }
-
   // Optional fields — accept null, undefined, or a valid value.
   const sqft =
     i.sqft === null || i.sqft === undefined
@@ -120,7 +111,6 @@ export function validateInput(input: unknown): ListingInput {
     lotSize,
     yearBuilt,
     features: i.features.trim(),
-    tone: i.tone as Tone,
   };
 }
 
@@ -137,10 +127,8 @@ export function buildUserMessage(input: ListingInput): string {
   lines.push("Features:");
   lines.push(input.features);
   lines.push("");
-  lines.push(`Requested tone: ${input.tone}`);
-  lines.push("");
   lines.push(
-    "Generate the variants now by calling the return_listing_variants tool."
+    "Generate the three tone variants (Professional, Warm, Luxury) now by calling the return_listing_variants tool."
   );
   return lines.join("\n");
 }
@@ -160,7 +148,8 @@ const RETURN_VARIANTS_TOOL: Anthropic.Tool = {
           properties: {
             label: {
               type: "string",
-              description: "Variant label: 'Variant 1', 'Variant 2', or 'Variant 3'.",
+              enum: ["Professional", "Warm", "Luxury"],
+              description: "Tone label: exactly 'Professional', 'Warm', or 'Luxury'.",
             },
             text: {
               type: "string",

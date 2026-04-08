@@ -23,7 +23,9 @@ import { fixtures, type Fixture } from "./fixtures";
 import type { Variant } from "../../src/lib/types";
 
 const BANNED_PHRASES = ["must-see", "must see", "won't last", "one-of-a-kind", "one of a kind"];
-const WORD_COUNT_MIN = 100;
+// v4 makes length adaptive: sparse inputs are allowed to produce shorter
+// variants rather than padding with invented filler. Floor lowered from 100.
+const WORD_COUNT_MIN = 60;
 const WORD_COUNT_MAX = 250;
 
 interface CheckResult {
@@ -82,7 +84,7 @@ async function runFixture(
   const softWarnings: string[] = [];
 
   console.log(`\n[${idx + 1}/${fixtures.length}] ${fixture.label}`);
-  console.log(`  tone: ${fixture.input.tone}, address: ${fixture.input.address}`);
+  console.log(`  address: ${fixture.input.address}`);
 
   let result;
   try {

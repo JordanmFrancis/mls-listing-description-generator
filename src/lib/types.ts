@@ -6,8 +6,6 @@
  * compatible (optional fields only) so existing records keep loading.
  */
 
-export type Tone = "professional" | "warm" | "luxury";
-
 export interface ListingInput {
   address: string;
   beds: number;
@@ -16,7 +14,6 @@ export interface ListingInput {
   lotSize: string | null;
   yearBuilt: number | null;
   features: string;
-  tone: Tone;
 }
 
 export interface Variant {
