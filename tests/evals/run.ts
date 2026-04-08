@@ -82,7 +82,7 @@ async function runFixture(
   const softWarnings: string[] = [];
 
   console.log(`\n[${idx + 1}/${fixtures.length}] ${fixture.label}`);
-  console.log(`  tone: ${fixture.input.tone}, address: ${fixture.input.address}`);
+  console.log(`  address: ${fixture.input.address}`);
 
   let result;
   try {
