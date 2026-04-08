@@ -8,8 +8,34 @@
  * double-click (spec edge case #4).
  */
 
-import { useState, type FormEvent } from "react";
-import type { ListingInput } from "@/lib/types";
+import { useState, type FormEvent, type ChangeEvent } from "react";
+import type {
+  ListingInput,
+  ExtractResponse,
+  ExtractedFields,
+} from "@/lib/types";
+import { isApiError } from "@/lib/types";
+
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB
+const ACCEPTED_TYPES = "application/pdf,image/png,image/jpeg,image/webp";
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read file."));
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("Unexpected file reader result."));
+        return;
+      }
+      // Strip "data:<mime>;base64," prefix
+      const comma = result.indexOf(",");
+      resolve(comma === -1 ? result : result.slice(comma + 1));
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 interface Props {
   onSubmit: (input: ListingInput) => void;
@@ -27,6 +53,97 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
   const [lotSize, setLotSize] = useState("");
   const [yearBuilt, setYearBuilt] = useState("");
   const [features, setFeatures] = useState("");
+
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [extractNotice, setExtractNotice] = useState<string | null>(null);
+
+  function applyExtractedFields(fields: ExtractedFields) {
+    const filled: string[] = [];
+    if (fields.address !== undefined) {
+      setAddress(fields.address);
+      filled.push("address");
+    }
+    if (fields.beds !== undefined) {
+      setBeds(String(fields.beds));
+      filled.push("beds");
+    }
+    if (fields.baths !== undefined) {
+      setBaths(String(fields.baths));
+      filled.push("baths");
+    }
+    if (fields.sqft !== undefined && fields.sqft !== null) {
+      setSqft(String(fields.sqft));
+      filled.push("sqft");
+    }
+    if (fields.lotSize !== undefined && fields.lotSize !== null) {
+      setLotSize(fields.lotSize);
+      filled.push("lot size");
+    }
+    if (fields.yearBuilt !== undefined && fields.yearBuilt !== null) {
+      setYearBuilt(String(fields.yearBuilt));
+      filled.push("year built");
+    }
+    if (fields.features !== undefined) {
+      setFeatures((prev) =>
+        prev.trim() ? `${prev.trim()}\n${fields.features}` : fields.features!
+      );
+      filled.push("features");
+    }
+    setExtractNotice(
+      filled.length === 0
+        ? "Couldn't read any fields from that document. Try a clearer scan or fill the form manually."
+        : `Filled ${filled.join(", ")}. Edit anything before generating.`
+    );
+  }
+
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // allow re-upload of the same file
+    if (!file) return;
+    setExtractError(null);
+    setExtractNotice(null);
+
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setExtractError("File is over 5 MB. Please upload a smaller file.");
+      return;
+    }
+    const isPdf = file.type === "application/pdf";
+    const isImage = file.type.startsWith("image/");
+    if (!isPdf && !isImage) {
+      setExtractError("Unsupported file type. Upload a PDF or image.");
+      return;
+    }
+
+    setIsExtracting(true);
+    try {
+      const base64 = await fileToBase64(file);
+      const res = await fetch("/api/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          base64,
+          mediaType: file.type,
+          kind: isPdf ? "pdf" : "image",
+        }),
+      });
+      const data: ExtractResponse = await res.json();
+      if (!res.ok || isApiError(data)) {
+        const msg = isApiError(data)
+          ? data.error
+          : `Extraction failed (status ${res.status}).`;
+        setExtractError(msg);
+        return;
+      }
+      applyExtractedFields(data.fields);
+    } catch (err) {
+      setExtractError(
+        err instanceof Error ? err.message : "Could not upload file."
+      );
+    } finally {
+      setIsExtracting(false);
+    }
+  }
 
   const featureWordCount = features.trim()
     ? features.trim().split(/\s+/).length
@@ -53,6 +170,39 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      <div className="rounded-md border border-dashed border-zinc-300 dark:border-zinc-700 p-4">
+        <label htmlFor="document" className="block text-sm font-medium mb-1">
+          Upload a tax card or property report (optional)
+        </label>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+          PDF or image, up to 5 MB. We&apos;ll auto-fill what we can read — you can
+          still edit everything before generating.
+        </p>
+        <input
+          id="document"
+          type="file"
+          accept={ACCEPTED_TYPES}
+          onChange={handleFileChange}
+          disabled={isExtracting || isGenerating}
+          className="block w-full text-sm text-zinc-700 dark:text-zinc-300 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-900 file:dark:bg-zinc-100 file:text-white file:dark:text-zinc-900 file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-zinc-700 dark:hover:file:bg-zinc-300 disabled:opacity-60"
+        />
+        {isExtracting && (
+          <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+            Reading document...
+          </div>
+        )}
+        {extractNotice && !isExtracting && (
+          <div className="mt-2 text-xs text-emerald-700 dark:text-emerald-400">
+            {extractNotice}
+          </div>
+        )}
+        {extractError && !isExtracting && (
+          <div className="mt-2 text-xs text-red-600 dark:text-red-400">
+            {extractError}
+          </div>
+        )}
+      </div>
+
       <div>
         <label htmlFor="address" className="block text-sm font-medium mb-1">
           Address <span className="text-red-500">*</span>
@@ -189,7 +339,7 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
       </div>
 
       <p className="text-xs text-zinc-500 dark:text-zinc-400">
-        You&apos;ll get three variants — Professional, Warm, and Luxury — so you can pick the voice that fits the listing.
+        You&apos;ll get three variants — Professional, Warm, and Story — so you can pick the voice that fits the listing.
       </p>
 
       <button

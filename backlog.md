@@ -4,6 +4,7 @@ Rough ideas captured during v1 build. Do NOT spec or build until v1 is
 shipped and Dad has used it on ≥3 real listings.
 
 ## Likely v2
+- **Saved user preferences.** Let the agent set their own defaults: phrases to always include, phrases to always ban, preferred CTA phrasing, default contact/sign-off line, maybe a fourth custom tone. Stored locally for v2. Came from Dad's feedback after v1 — he was editing the same things out of every variant.
 - Feedback on generations (thumbs up/down per variant, stored locally)
 - Iteration / refinement ("make variant 2 shorter", "more emphasis on the backyard")
 - Regenerate a single variant without re-running all 3

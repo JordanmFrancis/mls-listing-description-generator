@@ -5,13 +5,13 @@
  * Schema lives in src/lib/types.ts. Storage contract from specs/listing-generator.md:
  *   - key: "listing-generator-history"
  *   - value: JSON array of Generation objects
- *   - Never mutate existing entries. New generations append.
- *   - Cap at 100 entries; drop oldest when exceeded.
- *   - Reads tolerate malformed or partial data (return []).
+ *   - Never mutate existing entries. New generations are prepended (newest first).
+ *   - Cap at 100 entries; drop oldest (tail) when exceeded.
+ *   - Reads tolerate malformed or partial data: invalid entries are dropped silently.
  *   - Reads tolerate SSR (window undefined → return []).
  */
 
-import type { Generation } from "./types";
+import type { Generation, ListingInput, Variant } from "./types";
 
 export const HISTORY_KEY = "listing-generator-history";
 export const HISTORY_LIMIT = 100;
@@ -20,9 +20,40 @@ function hasWindow(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
+function isValidVariant(v: unknown): v is Variant {
+  if (!v || typeof v !== "object") return false;
+  const o = v as Record<string, unknown>;
+  return typeof o.label === "string" && typeof o.text === "string";
+}
+
+function isValidInput(i: unknown): i is ListingInput {
+  if (!i || typeof i !== "object") return false;
+  const o = i as Record<string, unknown>;
+  return (
+    typeof o.address === "string" &&
+    typeof o.beds === "number" &&
+    typeof o.baths === "number" &&
+    typeof o.features === "string"
+  );
+}
+
+function isValidGeneration(g: unknown): g is Generation {
+  if (!g || typeof g !== "object") return false;
+  const o = g as Record<string, unknown>;
+  return (
+    typeof o.id === "string" &&
+    typeof o.createdAt === "string" &&
+    typeof o.promptVersion === "string" &&
+    isValidInput(o.input) &&
+    Array.isArray(o.variants) &&
+    o.variants.every(isValidVariant)
+  );
+}
+
 /**
  * Reads the full history. Returns an empty array on any failure
- * (missing key, malformed JSON, server-side render).
+ * (missing key, malformed JSON, server-side render). Per-entry validation
+ * silently drops malformed entries so a single bad record can't crash the UI.
  */
 export function getHistory(): Generation[] {
   if (!hasWindow()) return [];
@@ -31,17 +62,18 @@ export function getHistory(): Generation[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed as Generation[];
+    return parsed.filter(isValidGeneration);
   } catch {
     return [];
   }
 }
 
 /**
- * Prepends a new generation to history. Caps at HISTORY_LIMIT, dropping
- * the oldest entries (from the tail). Existing entries are never mutated.
+ * Prepends a new generation to history (newest at index 0). Caps at
+ * HISTORY_LIMIT, dropping the oldest entries from the tail. Existing
+ * entries are never mutated.
  */
-export function appendGeneration(gen: Generation): void {
+export function addGeneration(gen: Generation): void {
   if (!hasWindow()) return;
   try {
     const current = getHistory();

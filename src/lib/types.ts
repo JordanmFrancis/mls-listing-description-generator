@@ -45,6 +45,25 @@ export interface ApiError {
 
 export type GenerateResponse = GenerateSuccess | ApiError;
 
-export function isApiError(r: GenerateResponse): r is ApiError {
-  return (r as ApiError).error !== undefined;
+export function isApiError(r: unknown): r is ApiError {
+  return (
+    !!r && typeof r === "object" && typeof (r as ApiError).error === "string"
+  );
 }
+
+/** Partial listing fields extracted from an uploaded document. */
+export type ExtractedFields = Partial<ListingInput>;
+
+/** Request body POSTed to /api/extract. base64 is the file bytes (no data: prefix). */
+export interface ExtractRequest {
+  base64: string;
+  mediaType: string;
+  /** "pdf" → sent as document content block; "image" → image content block. */
+  kind: "pdf" | "image";
+}
+
+export interface ExtractSuccess {
+  fields: ExtractedFields;
+}
+
+export type ExtractResponse = ExtractSuccess | ApiError;
