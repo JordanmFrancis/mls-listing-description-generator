@@ -3,15 +3,16 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Editorial · Ink + Gold */
+  --canvas: #FCFBF7;
+  --ink: #1A1A1A;
+  --accent: #D4A14A;
+  --header-bg: #0A0A0A;
+  --header-trim: #D4A14A;
+  --header-fg: #F7F3EB;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: var(--canvas);
+  --foreground: var(--ink);
 }
 
 body {

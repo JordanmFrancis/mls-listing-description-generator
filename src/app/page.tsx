@@ -1,8 +1,9 @@
 "use client";
 
 /**
- * Main UI. Composes ListingForm, results grid, and HistorySidebar.
- * Owns the form → API → history flow.
+ * Main UI. Editorial "Listing Desk" composition — navy/ink header with brass
+ * trim over a warm off-white canvas. Composes ListingForm, results grid, and
+ * HistorySidebar and owns the form → API → history flow.
  */
 
 import { useState } from "react";
@@ -68,55 +69,136 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
-      <div className="mx-auto max-w-7xl px-6 py-8">
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold">Listing Generator</h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-            Fill in the property details and get three MLS-ready description
-            variants — one in each tone.
-          </p>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8">
-          <div className="flex flex-col gap-8 min-w-0">
-            <section className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6">
-              <ListingForm
-                onSubmit={handleGenerate}
-                isGenerating={isGenerating}
+    <main className="min-h-screen" style={{ background: "var(--canvas)", color: "var(--ink)" }}>
+      {/* Masthead — ink bar with gold trim */}
+      <header
+        className="border-b-2"
+        style={{ background: "var(--header-bg)", color: "var(--header-fg)", borderColor: "var(--header-trim)" }}
+      >
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-5 flex items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 border flex items-center justify-center rounded-sm"
+              style={{ borderColor: "var(--header-trim)" }}
+            >
+              <span className="font-serif text-lg leading-none" style={{ color: "var(--header-trim)" }}>L</span>
+            </div>
+            <div>
+              <h1 className="font-serif text-2xl tracking-wide leading-none">Listing Desk</h1>
+              <p className="text-[10px] tracking-[0.25em] uppercase mt-1" style={{ color: "var(--header-trim)" }}>
+                Atelier for Agents
+              </p>
+            </div>
+          </div>
+          <nav className="hidden md:flex items-center gap-8 text-sm">
+            <span
+              className="relative pb-1"
+              style={{ color: "var(--header-fg)" }}
+            >
+              Generator
+              <span
+                className="absolute bottom-0 left-0 right-0 h-[2px]"
+                style={{ background: "var(--header-trim)" }}
               />
-            </section>
+            </span>
+            <span className="opacity-70 pb-1">Archive</span>
+            <span className="opacity-70 pb-1">Guidelines</span>
+            <span className="opacity-70 pb-1">Account</span>
+          </nav>
+        </div>
+      </header>
+
+      {/* Meta strip */}
+      <div className="border-b" style={{ borderColor: "rgba(26,26,26,0.1)", background: "rgba(26,26,26,0.03)" }}>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-3 flex items-center justify-between text-[10px] tracking-[0.3em] uppercase" style={{ color: "rgba(26,26,26,0.6)" }}>
+          <span>Issue 01 · New Composition</span>
+          <span>
+            Saved locally <span style={{ color: "var(--accent)" }}>—</span> draft
+          </span>
+        </div>
+      </div>
+
+      <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-10 md:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10">
+          {/* Main column */}
+          <div className="min-w-0 flex flex-col gap-10">
+            {/* Editorial sub-masthead */}
+            <div className="pb-8 border-b" style={{ borderColor: "rgba(26,26,26,0.2)" }}>
+              <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: "var(--accent)" }}>
+                Vol. V — April · Twenty Twenty-Six
+              </div>
+              <h2 className="font-serif text-4xl md:text-5xl leading-tight tracking-tight max-w-2xl">
+                A quiet instrument for the working agent.
+              </h2>
+              <p className="font-serif italic text-base mt-4 max-w-xl" style={{ color: "rgba(26,26,26,0.6)" }}>
+                Three compositions will be drafted from the particulars you provide — one Professional, one Warm, one Story.
+              </p>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-6 text-[10px] tracking-[0.25em] uppercase" style={{ color: "rgba(26,26,26,0.5)" }}>
+                <span>The Desk</span>
+                <span style={{ color: "rgba(26,26,26,0.25)" }}>·</span>
+                <span>Composition Room</span>
+                <span style={{ color: "rgba(26,26,26,0.25)" }}>·</span>
+                <span>Archive</span>
+                <span style={{ color: "rgba(26,26,26,0.25)" }}>·</span>
+                <span>Page 01 / 04</span>
+              </div>
+            </div>
+
+            <ListingForm onSubmit={handleGenerate} isGenerating={isGenerating} />
 
             {error && (
               <div
                 role="alert"
-                className="rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-800 dark:text-red-300"
+                className="border px-5 py-4 text-sm"
+                style={{
+                  borderColor: "rgba(168,40,40,0.4)",
+                  background: "rgba(168,40,40,0.05)",
+                  color: "#7a1f1f",
+                }}
               >
-                <div className="font-semibold mb-1">Generation failed</div>
+                <div className="font-serif text-lg mb-1">A composition could not be drafted.</div>
                 <div>{error}</div>
               </div>
             )}
 
             {variants && (
               <section>
-                <h2 className="text-lg font-semibold mb-4">Variants</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: "var(--accent)" }}>
+                  Section III — The Drafts
+                </div>
+                <h3 className="font-serif text-3xl mb-8 leading-tight">
+                  Three readings of the same house.
+                </h3>
+                <div className="flex flex-col gap-8">
                   {variants.map((v, idx) => (
-                    <VariantCard key={idx} variant={v} />
+                    <VariantCard key={idx} variant={v} index={idx} />
                   ))}
                 </div>
               </section>
             )}
 
             {!variants && !error && !isGenerating && (
-              <div className="rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-                Your generated variants will appear here.
+              <div
+                className="border border-dashed px-6 py-10 text-center"
+                style={{ borderColor: "rgba(26,26,26,0.2)" }}
+              >
+                <p className="font-serif italic text-lg" style={{ color: "rgba(26,26,26,0.5)" }}>
+                  The drafts will appear here once composed.
+                </p>
               </div>
             )}
           </div>
 
           <HistorySidebar refreshKey={historyRefresh} />
         </div>
+
+        <footer
+          className="mt-16 pt-6 border-t flex items-center justify-between text-[10px] tracking-[0.3em] uppercase"
+          style={{ borderColor: "rgba(26,26,26,0.2)", color: "rgba(26,26,26,0.5)" }}
+        >
+          <span>Listing Desk — Composed with care</span>
+          <span>Page 01 / 04</span>
+        </footer>
       </div>
     </main>
   );

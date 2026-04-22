@@ -3,9 +3,10 @@
 /**
  * ListingForm — collects all property fields and fires onSubmit(input).
  *
- * Parent owns the fetch + isGenerating state so this component stays
- * pure form/UI. Submit button is disabled while isGenerating to prevent
- * double-click (spec edge case #4).
+ * Editorial style: underline-only inputs, serif values, eyebrow labels.
+ * Parent owns the fetch + isGenerating state so this component stays pure
+ * form/UI. Submit button is disabled while isGenerating to prevent double-
+ * click (spec edge case #4).
  */
 
 import { useState, type FormEvent, type ChangeEvent } from "react";
@@ -29,7 +30,6 @@ function fileToBase64(file: File): Promise<string> {
         reject(new Error("Unexpected file reader result."));
         return;
       }
-      // Strip "data:<mime>;base64," prefix
       const comma = result.indexOf(",");
       resolve(comma === -1 ? result : result.slice(comma + 1));
     };
@@ -42,8 +42,16 @@ interface Props {
   isGenerating: boolean;
 }
 
-const FEATURES_SOFT_WARN = 400; // words — soft warning threshold in UI
-const FEATURES_HARD_LIMIT = 500; // matches server-side cap in generate.ts
+const FEATURES_SOFT_WARN = 400;
+const FEATURES_HARD_LIMIT = 500;
+
+const INK_BORDER = "rgba(26,26,26,0.3)";
+const INK_BORDER_STRONG = "rgba(26,26,26,0.8)";
+const INK_BORDER_LIGHT = "rgba(26,26,26,0.15)";
+
+function eyebrowStyle(): React.CSSProperties {
+  return { color: "rgba(26,26,26,0.6)" };
+}
 
 export default function ListingForm({ onSubmit, isGenerating }: Props) {
   const [address, setAddress] = useState("");
@@ -92,20 +100,20 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
     }
     setExtractNotice(
       filled.length === 0
-        ? "Couldn't read any fields from that document. Try a clearer scan or fill the form manually."
-        : `Filled ${filled.join(", ")}. Edit anything before generating.`
+        ? "The document could not be read. Try a clearer scan, or enter the particulars by hand."
+        : `Filled ${filled.join(", ")}. Revise anything before drafting.`
     );
   }
 
   async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    e.target.value = ""; // allow re-upload of the same file
+    e.target.value = "";
     if (!file) return;
     setExtractError(null);
     setExtractNotice(null);
 
     if (file.size > MAX_UPLOAD_BYTES) {
-      setExtractError("File is over 5 MB. Please upload a smaller file.");
+      setExtractError("File exceeds 5 MB. Please upload a smaller file.");
       return;
     }
     const isPdf = file.type === "application/pdf";
@@ -168,187 +176,253 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
     onSubmit(input);
   }
 
+  const underlineInput =
+    "w-full bg-transparent border-0 border-b focus:outline-none py-2 font-serif text-xl transition-colors disabled:opacity-60";
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      <div className="rounded-md border border-dashed border-zinc-300 dark:border-zinc-700 p-4">
-        <label htmlFor="document" className="block text-sm font-medium mb-1">
-          Upload a tax card or property report (optional)
-        </label>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
-          PDF or image, up to 5 MB. We&apos;ll auto-fill what we can read — you can
-          still edit everything before generating.
-        </p>
-        <input
-          id="document"
-          type="file"
-          accept={ACCEPTED_TYPES}
-          onChange={handleFileChange}
-          disabled={isExtracting || isGenerating}
-          className="block w-full text-sm text-zinc-700 dark:text-zinc-300 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-900 file:dark:bg-zinc-100 file:text-white file:dark:text-zinc-900 file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-zinc-700 dark:hover:file:bg-zinc-300 disabled:opacity-60"
-        />
-        {isExtracting && (
-          <div className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-            Reading document...
-          </div>
-        )}
-        {extractNotice && !isExtracting && (
-          <div className="mt-2 text-xs text-emerald-700 dark:text-emerald-400">
-            {extractNotice}
-          </div>
-        )}
-        {extractError && !isExtracting && (
-          <div className="mt-2 text-xs text-red-600 dark:text-red-400">
-            {extractError}
-          </div>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="address" className="block text-sm font-medium mb-1">
-          Address <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="address"
-          type="text"
-          required
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="123 Main Street, Springfield"
-          className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-          disabled={isGenerating}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="beds" className="block text-sm font-medium mb-1">
-            Beds <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="beds"
-            type="number"
-            min="0"
-            step="1"
-            required
-            value={beds}
-            onChange={(e) => setBeds(e.target.value)}
-            placeholder="3"
-            className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-            disabled={isGenerating}
-          />
+    <form onSubmit={handleSubmit} className="flex flex-col gap-10">
+      {/* Intake */}
+      <section>
+        <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: "var(--accent)" }}>
+          Section I — Intake
         </div>
-        <div>
-          <label htmlFor="baths" className="block text-sm font-medium mb-1">
-            Baths <span className="text-red-500">*</span>
-          </label>
-          <input
-            id="baths"
-            type="number"
-            min="0"
-            step="0.5"
-            required
-            value={baths}
-            onChange={(e) => setBaths(e.target.value)}
-            placeholder="2"
-            className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-            disabled={isGenerating}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label htmlFor="sqft" className="block text-sm font-medium mb-1">
-            Sqft
-          </label>
-          <input
-            id="sqft"
-            type="number"
-            min="0"
-            step="1"
-            value={sqft}
-            onChange={(e) => setSqft(e.target.value)}
-            placeholder="1800"
-            className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-            disabled={isGenerating}
-          />
-        </div>
-        <div>
-          <label htmlFor="lotSize" className="block text-sm font-medium mb-1">
-            Lot size
-          </label>
-          <input
-            id="lotSize"
-            type="text"
-            value={lotSize}
-            onChange={(e) => setLotSize(e.target.value)}
-            placeholder="0.25 acres"
-            className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-            disabled={isGenerating}
-          />
-        </div>
-        <div>
-          <label htmlFor="yearBuilt" className="block text-sm font-medium mb-1">
-            Year built
-          </label>
-          <input
-            id="yearBuilt"
-            type="number"
-            min="1600"
-            max="2100"
-            step="1"
-            value={yearBuilt}
-            onChange={(e) => setYearBuilt(e.target.value)}
-            placeholder="2010"
-            className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-            disabled={isGenerating}
-          />
-        </div>
-      </div>
-
-      <div>
-        <label htmlFor="features" className="block text-sm font-medium mb-1">
-          Key features <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          id="features"
-          required
-          value={features}
-          onChange={(e) => setFeatures(e.target.value)}
-          rows={5}
-          placeholder="Updated kitchen with quartz counters, hardwood throughout, fenced backyard, two-car garage, walking distance to Roosevelt Elementary..."
-          className="w-full rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100 resize-y"
-          disabled={isGenerating}
-        />
-        <div
-          className={`mt-1 text-xs ${
-            featuresOverHard
-              ? "text-red-600 dark:text-red-400"
-              : featuresOverSoft
-                ? "text-amber-600 dark:text-amber-400"
-                : "text-zinc-500 dark:text-zinc-400"
-          }`}
+        <h3 className="font-serif text-3xl mb-5 leading-tight">
+          Begin with a document, or begin by hand.
+        </h3>
+        <label
+          htmlFor="document"
+          className="block border border-dashed p-8 text-center cursor-pointer transition-colors hover:border-[color:var(--accent)]"
+          style={{ borderColor: INK_BORDER }}
         >
-          {featureWordCount} {featureWordCount === 1 ? "word" : "words"}
-          {featuresOverHard &&
-            ` — over the ${FEATURES_HARD_LIMIT}-word limit. Please trim before generating.`}
-          {!featuresOverHard &&
-            featuresOverSoft &&
-            ` — getting long. The server caps at ${FEATURES_HARD_LIMIT} words.`}
+          <div className="font-serif italic text-lg mb-2" style={{ color: "rgba(26,26,26,0.7)" }}>
+            Upload a tax card or property report
+          </div>
+          <div className="text-xs tracking-wide" style={{ color: "rgba(26,26,26,0.5)" }}>
+            PDF or image, up to 5 MB. We&apos;ll auto-fill what we can read — revise anything before drafting.
+          </div>
+          <input
+            id="document"
+            type="file"
+            accept={ACCEPTED_TYPES}
+            onChange={handleFileChange}
+            disabled={isExtracting || isGenerating}
+            className="sr-only"
+          />
+          {isExtracting && (
+            <div className="mt-3 text-xs tracking-widest uppercase" style={{ color: "rgba(26,26,26,0.6)" }}>
+              Reading document…
+            </div>
+          )}
+          {extractNotice && !isExtracting && (
+            <div className="mt-3 font-serif italic text-sm" style={{ color: "var(--accent)" }}>
+              {extractNotice}
+            </div>
+          )}
+          {extractError && !isExtracting && (
+            <div className="mt-3 text-xs" style={{ color: "#a33a3a" }}>
+              {extractError}
+            </div>
+          )}
+        </label>
+      </section>
+
+      {/* Particulars */}
+      <section>
+        <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: "var(--accent)" }}>
+          Section II — Particulars
         </div>
-      </div>
+        <h3 className="font-serif text-3xl mb-6 leading-tight">
+          The property, in its own words.
+        </h3>
 
-      <p className="text-xs text-zinc-500 dark:text-zinc-400">
-        You&apos;ll get three variants — Professional, Warm, and Story — so you can pick the voice that fits the listing.
-      </p>
+        <div className="flex flex-col gap-6">
+          <div>
+            <label htmlFor="address" className="block text-[10px] tracking-[0.3em] uppercase mb-2" style={eyebrowStyle()}>
+              Address <span style={{ color: "var(--accent)" }}>· required</span>
+            </label>
+            <input
+              id="address"
+              type="text"
+              required
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="847 Chestnut Grove Ln · Springfield, OH"
+              className={underlineInput}
+              style={{ borderColor: INK_BORDER }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = INK_BORDER_STRONG)}
+              onBlur={(e) => (e.currentTarget.style.borderColor = INK_BORDER)}
+              disabled={isGenerating}
+            />
+          </div>
 
-      <button
-        type="submit"
-        disabled={isGenerating || featuresOverHard}
-        className="rounded-md bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 px-4 py-2.5 font-medium hover:bg-zinc-700 dark:hover:bg-zinc-300 disabled:bg-zinc-400 dark:disabled:bg-zinc-700 disabled:cursor-not-allowed transition-colors"
-      >
-        {isGenerating ? "Generating..." : "Generate variants"}
-      </button>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="beds" className="block text-[10px] tracking-[0.3em] uppercase mb-2" style={eyebrowStyle()}>
+                Bedrooms <span style={{ color: "var(--accent)" }}>· required</span>
+              </label>
+              <input
+                id="beds"
+                type="number"
+                min="0"
+                step="1"
+                required
+                value={beds}
+                onChange={(e) => setBeds(e.target.value)}
+                placeholder="4"
+                className={underlineInput}
+                style={{ borderColor: INK_BORDER }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = INK_BORDER_STRONG)}
+                onBlur={(e) => (e.currentTarget.style.borderColor = INK_BORDER)}
+                disabled={isGenerating}
+              />
+            </div>
+            <div>
+              <label htmlFor="baths" className="block text-[10px] tracking-[0.3em] uppercase mb-2" style={eyebrowStyle()}>
+                Bathrooms <span style={{ color: "var(--accent)" }}>· required</span>
+              </label>
+              <input
+                id="baths"
+                type="number"
+                min="0"
+                step="0.5"
+                required
+                value={baths}
+                onChange={(e) => setBaths(e.target.value)}
+                placeholder="2.5"
+                className={underlineInput}
+                style={{ borderColor: INK_BORDER }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = INK_BORDER_STRONG)}
+                onBlur={(e) => (e.currentTarget.style.borderColor = INK_BORDER)}
+                disabled={isGenerating}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div>
+              <label htmlFor="sqft" className="block text-[10px] tracking-[0.3em] uppercase mb-2" style={eyebrowStyle()}>
+                Square Feet
+              </label>
+              <input
+                id="sqft"
+                type="number"
+                min="0"
+                step="1"
+                value={sqft}
+                onChange={(e) => setSqft(e.target.value)}
+                placeholder="2,480"
+                className={underlineInput}
+                style={{ borderColor: INK_BORDER }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = INK_BORDER_STRONG)}
+                onBlur={(e) => (e.currentTarget.style.borderColor = INK_BORDER)}
+                disabled={isGenerating}
+              />
+            </div>
+            <div>
+              <label htmlFor="lotSize" className="block text-[10px] tracking-[0.3em] uppercase mb-2" style={eyebrowStyle()}>
+                Lot Size
+              </label>
+              <input
+                id="lotSize"
+                type="text"
+                value={lotSize}
+                onChange={(e) => setLotSize(e.target.value)}
+                placeholder="0.34 ac"
+                className={underlineInput}
+                style={{ borderColor: INK_BORDER }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = INK_BORDER_STRONG)}
+                onBlur={(e) => (e.currentTarget.style.borderColor = INK_BORDER)}
+                disabled={isGenerating}
+              />
+            </div>
+            <div>
+              <label htmlFor="yearBuilt" className="block text-[10px] tracking-[0.3em] uppercase mb-2" style={eyebrowStyle()}>
+                Year Built
+              </label>
+              <input
+                id="yearBuilt"
+                type="number"
+                min="1600"
+                max="2100"
+                step="1"
+                value={yearBuilt}
+                onChange={(e) => setYearBuilt(e.target.value)}
+                placeholder="1974"
+                className={underlineInput}
+                style={{ borderColor: INK_BORDER }}
+                onFocus={(e) => (e.currentTarget.style.borderColor = INK_BORDER_STRONG)}
+                onBlur={(e) => (e.currentTarget.style.borderColor = INK_BORDER)}
+                disabled={isGenerating}
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label htmlFor="features" className="block text-[10px] tracking-[0.3em] uppercase" style={eyebrowStyle()}>
+                Features &amp; Notes <span style={{ color: "var(--accent)" }}>· required</span>
+              </label>
+              <span
+                className="text-[10px] tracking-[0.2em] uppercase font-mono"
+                style={{
+                  color: featuresOverHard
+                    ? "#a33a3a"
+                    : featuresOverSoft
+                      ? "#a8772a"
+                      : "rgba(26,26,26,0.5)",
+                }}
+              >
+                {featureWordCount} / 500 words
+              </span>
+            </div>
+            <textarea
+              id="features"
+              required
+              value={features}
+              onChange={(e) => setFeatures(e.target.value)}
+              rows={5}
+              placeholder="Renovated kitchen with quartz counters and gas range. Original white oak floors. Screened back porch. Basement finished in 2021. Walk to Wittenberg and the downtown square."
+              className="w-full bg-transparent border focus:outline-none p-4 font-serif text-base leading-relaxed resize-y transition-colors disabled:opacity-60"
+              style={{ borderColor: INK_BORDER_LIGHT }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = INK_BORDER_STRONG)}
+              onBlur={(e) => (e.currentTarget.style.borderColor = INK_BORDER_LIGHT)}
+              disabled={isGenerating}
+            />
+            {featuresOverHard && (
+              <div className="mt-1 text-xs" style={{ color: "#a33a3a" }}>
+                Over the {FEATURES_HARD_LIMIT}-word limit. Please trim before drafting.
+              </div>
+            )}
+            {!featuresOverHard && featuresOverSoft && (
+              <div className="mt-1 text-xs" style={{ color: "#a8772a" }}>
+                Growing long. The server caps at {FEATURES_HARD_LIMIT} words.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-wrap items-center gap-6">
+          <button
+            type="submit"
+            disabled={isGenerating || featuresOverHard}
+            className="px-10 py-3 text-[11px] tracking-[0.3em] uppercase border transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              background: "var(--header-bg)",
+              color: "var(--header-fg)",
+              borderColor: "rgba(212,161,74,0.4)",
+            }}
+          >
+            {isGenerating ? (
+              <>Drafting <span style={{ color: "var(--accent)" }}>—</span> please wait</>
+            ) : (
+              <>Generate <span style={{ color: "var(--accent)" }}>—</span> Variants</>
+            )}
+          </button>
+          <span className="font-serif italic text-sm" style={{ color: "rgba(26,26,26,0.55)" }}>
+            Three compositions will be drafted.
+          </span>
+        </div>
+      </section>
     </form>
   );
 }
