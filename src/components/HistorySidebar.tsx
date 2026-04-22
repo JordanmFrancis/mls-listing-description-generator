@@ -1,15 +1,12 @@
 "use client";
 
 /**
- * HistorySidebar — collapsible list of past generations from localStorage.
+ * HistorySidebar — editorial "Archive" styled list of past generations from
+ * localStorage. Reads via src/lib/history.ts (the only allowed localStorage
+ * gateway). The parent passes `refreshKey` that bumps whenever a new
+ * generation is appended; that re-reads history without a global store.
  *
- * Reads history via src/lib/history.ts (the only allowed localStorage gateway).
- * For v1, entries are display-only: click a row to expand it inline and see
- * the variants. No "reload into form" action — that's backlog territory.
- *
- * The parent passes `refreshKey` that bumps whenever a new generation is
- * appended, which re-reads history. This keeps the sidebar in sync without
- * needing a global store.
+ * Reads localStorage only after mount to avoid SSR/hydration mismatch.
  */
 
 import { useEffect, useState } from "react";
@@ -39,81 +36,105 @@ export default function HistorySidebar({ refreshKey }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Read localStorage only after mount to avoid SSR/hydration mismatch.
   useEffect(() => {
     setHistory(getHistory());
   }, [refreshKey]);
 
   return (
-    <aside className="flex flex-col gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-      <button
-        type="button"
-        onClick={() => setCollapsed((c) => !c)}
-        className="flex w-full items-center justify-between text-left"
-      >
-        <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">
-          History
-          {history.length > 0 && (
-            <span className="ml-2 text-xs font-normal text-zinc-500 dark:text-zinc-400">
-              ({history.length})
-            </span>
-          )}
-        </h2>
-        <span className="text-zinc-500 dark:text-zinc-400 text-sm">
-          {collapsed ? "▸" : "▾"}
-        </span>
-      </button>
+    <aside className="lg:border-l lg:pl-10" style={{ borderColor: "rgba(26,26,26,0.2)" }}>
+      <div className="lg:sticky lg:top-10">
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          className="flex w-full items-baseline justify-between text-left mb-6"
+        >
+          <div>
+            <div className="text-[10px] tracking-[0.3em] uppercase font-medium mb-2" style={{ color: "var(--accent)" }}>
+              The Archive
+            </div>
+            <h3 className="font-serif text-2xl leading-tight">
+              Previously composed.
+              {history.length > 0 && (
+                <span className="ml-3 font-sans text-xs uppercase tracking-[0.2em] font-normal" style={{ color: "rgba(26,26,26,0.5)" }}>
+                  {history.length}
+                </span>
+              )}
+            </h3>
+          </div>
+          <span className="text-sm font-mono" style={{ color: "rgba(26,26,26,0.5)" }}>
+            {collapsed ? "▸" : "▾"}
+          </span>
+        </button>
 
-      {!collapsed && (
-        <>
-          {history.length === 0 ? (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No past generations yet. Fill in the form and click Generate.
-            </p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {history.map((gen) => {
-                const isExpanded = expandedId === gen.id;
-                return (
-                  <li
-                    key={gen.id}
-                    className="rounded-md border border-zinc-200 dark:border-zinc-800"
-                  >
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setExpandedId(isExpanded ? null : gen.id)
-                      }
-                      className="w-full text-left px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-md"
+        {!collapsed && (
+          <>
+            {history.length === 0 ? (
+              <p className="font-serif italic text-sm" style={{ color: "rgba(26,26,26,0.6)" }}>
+                Nothing composed yet. Fill in the particulars and draft your first.
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-5">
+                {history.map((gen, i) => {
+                  const isExpanded = expandedId === gen.id;
+                  return (
+                    <li
+                      key={gen.id}
+                      className="border-b pb-5"
+                      style={{ borderColor: "rgba(26,26,26,0.1)" }}
                     >
-                      <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
-                        {gen.input.address}
-                      </div>
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                        {formatRelativeTime(gen.createdAt)}
-                      </div>
-                    </button>
-                    {isExpanded && (
-                      <div className="border-t border-zinc-200 dark:border-zinc-800 px-3 py-2 flex flex-col gap-3">
-                        {gen.variants.map((v, idx) => (
-                          <div key={idx}>
-                            <div className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 mb-1">
-                              {v.label}
+                      <button
+                        type="button"
+                        onClick={() => setExpandedId(isExpanded ? null : gen.id)}
+                        className="w-full text-left group"
+                      >
+                        <div className="flex items-baseline justify-between mb-1">
+                          <span
+                            className="text-[10px] tracking-[0.25em] uppercase font-mono"
+                            style={{ color: "rgba(26,26,26,0.4)" }}
+                          >
+                            № {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <span
+                            className="text-[10px] tracking-[0.2em] uppercase"
+                            style={{ color: "rgba(26,26,26,0.5)" }}
+                          >
+                            {formatRelativeTime(gen.createdAt)}
+                          </span>
+                        </div>
+                        <div
+                          className="font-serif text-lg transition-colors group-hover:text-[color:var(--accent)]"
+                        >
+                          {gen.input.address || "Untitled property"}
+                        </div>
+                      </button>
+                      {isExpanded && (
+                        <div className="pt-4 flex flex-col gap-3">
+                          {gen.variants.map((v, idx) => (
+                            <div key={idx}>
+                              <div
+                                className="text-[10px] font-medium tracking-[0.2em] uppercase mb-1"
+                                style={{ color: "var(--accent)" }}
+                              >
+                                {v.label}
+                              </div>
+                              <p
+                                className="font-serif text-xs leading-relaxed whitespace-pre-wrap"
+                                style={{ color: "rgba(26,26,26,0.8)" }}
+                              >
+                                {v.text}
+                              </p>
                             </div>
-                            <p className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
-                              {v.text}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </>
-      )}
+                          ))}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </>
+        )}
+      </div>
     </aside>
   );
 }
