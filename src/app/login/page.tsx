@@ -13,11 +13,21 @@
  * to the callback so they end up where they meant to go.
  */
 
-import { useEffect, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  // useSearchParams requires a Suspense boundary during Next's static prerender
+  // pass. Wrapping the whole form in Suspense satisfies the build check.
+  return (
+    <Suspense fallback={null}>
+      <LoginPageInner />
+    </Suspense>
+  );
+}
+
+function LoginPageInner() {
   const search = useSearchParams();
   const next = search.get("next") || "/";
 
