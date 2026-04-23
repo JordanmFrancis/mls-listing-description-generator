@@ -2,17 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+ * Editorial · Ink + Gold (Light)
+ *
+ * Light is the default. Dark overrides are applied when <html> has the
+ * class "dark". The inline script in layout.tsx sets the class before
+ * first paint based on localStorage ("ld-theme") or OS preference, so we
+ * avoid a flash of wrong theme.
+ *
+ * --ink-rgb and --accent-rgb exist so inline rgba() calls in components
+ * can fade the foreground/accent at arbitrary opacities and still flip
+ * correctly when the theme changes.
+ * ---------------------------------------------------------------------------
+ */
+
 :root {
-  /* Editorial · Ink + Gold */
   --canvas: #FCFBF7;
   --ink: #1A1A1A;
+  --ink-rgb: 26, 26, 26;
   --accent: #D4A14A;
+  --accent-rgb: 212, 161, 74;
   --header-bg: #0A0A0A;
   --header-trim: #D4A14A;
   --header-fg: #F7F3EB;
 
   --background: var(--canvas);
   --foreground: var(--ink);
+
+  color-scheme: light;
+}
+
+html.dark {
+  /* Variant 4 — Dark Slate */
+  --canvas: #16191E;
+  --ink: #D8DCE3;
+  --ink-rgb: 216, 220, 227;
+  --header-bg: #0E1115;
+  --header-fg: #D8DCE3;
+  /* --accent and --accent-rgb unchanged; brass cuts warmly through cool slate */
+
+  color-scheme: dark;
 }
 
 body {

@@ -10,6 +10,7 @@ import { useState } from "react";
 import ListingForm from "@/components/ListingForm";
 import VariantCard from "@/components/VariantCard";
 import HistorySidebar from "@/components/HistorySidebar";
+import ThemeToggle from "@/components/ThemeToggle";
 import { addGeneration } from "@/lib/history";
 import type {
   ListingInput,
@@ -90,27 +91,30 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <nav className="hidden md:flex items-center gap-8 text-sm">
-            <span
-              className="relative pb-1"
-              style={{ color: "var(--header-fg)" }}
-            >
-              Generator
+          <div className="flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-8 text-sm">
               <span
-                className="absolute bottom-0 left-0 right-0 h-[2px]"
-                style={{ background: "var(--header-trim)" }}
-              />
-            </span>
-            <span className="opacity-70 pb-1">Archive</span>
-            <span className="opacity-70 pb-1">Guidelines</span>
-            <span className="opacity-70 pb-1">Account</span>
-          </nav>
+                className="relative pb-1"
+                style={{ color: "var(--header-fg)" }}
+              >
+                Generator
+                <span
+                  className="absolute bottom-0 left-0 right-0 h-[2px]"
+                  style={{ background: "var(--header-trim)" }}
+                />
+              </span>
+              <span className="opacity-70 pb-1">Archive</span>
+              <span className="opacity-70 pb-1">Guidelines</span>
+              <span className="opacity-70 pb-1">Account</span>
+            </nav>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
       {/* Meta strip */}
-      <div className="border-b" style={{ borderColor: "rgba(26,26,26,0.1)", background: "rgba(26,26,26,0.03)" }}>
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-3 flex items-center justify-between text-[10px] tracking-[0.3em] uppercase" style={{ color: "rgba(26,26,26,0.6)" }}>
+      <div className="border-b" style={{ borderColor: "rgba(var(--ink-rgb),0.1)", background: "rgba(var(--ink-rgb),0.03)" }}>
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-3 flex items-center justify-between text-[10px] tracking-[0.3em] uppercase" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
           <span>Issue 01 · New Composition</span>
           <span>
             Saved locally <span style={{ color: "var(--accent)" }}>—</span> draft
@@ -123,23 +127,23 @@ export default function Home() {
           {/* Main column */}
           <div className="min-w-0 flex flex-col gap-10">
             {/* Editorial sub-masthead */}
-            <div className="pb-8 border-b" style={{ borderColor: "rgba(26,26,26,0.2)" }}>
+            <div className="pb-8 border-b" style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
               <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: "var(--accent)" }}>
                 Vol. V — April · Twenty Twenty-Six
               </div>
               <h2 className="font-serif text-4xl md:text-5xl leading-tight tracking-tight max-w-2xl">
                 A quiet instrument for the working agent.
               </h2>
-              <p className="font-serif italic text-base mt-4 max-w-xl" style={{ color: "rgba(26,26,26,0.6)" }}>
+              <p className="font-serif italic text-base mt-4 max-w-xl" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
                 Three compositions will be drafted from the particulars you provide — one Professional, one Warm, one Story.
               </p>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-6 text-[10px] tracking-[0.25em] uppercase" style={{ color: "rgba(26,26,26,0.5)" }}>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-6 text-[10px] tracking-[0.25em] uppercase" style={{ color: "rgba(var(--ink-rgb),0.5)" }}>
                 <span>The Desk</span>
-                <span style={{ color: "rgba(26,26,26,0.25)" }}>·</span>
+                <span style={{ color: "rgba(var(--ink-rgb),0.25)" }}>·</span>
                 <span>Composition Room</span>
-                <span style={{ color: "rgba(26,26,26,0.25)" }}>·</span>
+                <span style={{ color: "rgba(var(--ink-rgb),0.25)" }}>·</span>
                 <span>Archive</span>
-                <span style={{ color: "rgba(26,26,26,0.25)" }}>·</span>
+                <span style={{ color: "rgba(var(--ink-rgb),0.25)" }}>·</span>
                 <span>Page 01 / 04</span>
               </div>
             </div>
@@ -180,9 +184,9 @@ export default function Home() {
             {!variants && !error && !isGenerating && (
               <div
                 className="border border-dashed px-6 py-10 text-center"
-                style={{ borderColor: "rgba(26,26,26,0.2)" }}
+                style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}
               >
-                <p className="font-serif italic text-lg" style={{ color: "rgba(26,26,26,0.5)" }}>
+                <p className="font-serif italic text-lg" style={{ color: "rgba(var(--ink-rgb),0.5)" }}>
                   The drafts will appear here once composed.
                 </p>
               </div>
@@ -194,7 +198,7 @@ export default function Home() {
 
         <footer
           className="mt-16 pt-6 border-t flex items-center justify-between text-[10px] tracking-[0.3em] uppercase"
-          style={{ borderColor: "rgba(26,26,26,0.2)", color: "rgba(26,26,26,0.5)" }}
+          style={{ borderColor: "rgba(var(--ink-rgb),0.2)", color: "rgba(var(--ink-rgb),0.5)" }}
         >
           <span>Listing Desk — Composed with care</span>
           <span>Page 01 / 04</span>
