@@ -14,13 +14,19 @@
 import { useEffect, useState } from "react";
 
 const STORAGE_KEY = "ld-theme";
+export const THEME_CHANGED_EVENT = "listing-desk:theme-changed";
 
 export default function ThemeToggle() {
   // `null` until mounted — avoids rendering an incorrect icon during SSR.
   const [isDark, setIsDark] = useState<boolean | null>(null);
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
+    function refresh() {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    }
+    refresh();
+    window.addEventListener(THEME_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(THEME_CHANGED_EVENT, refresh);
   }, []);
 
   function toggle() {
@@ -32,6 +38,7 @@ export default function ThemeToggle() {
       // private mode / storage disabled — the toggle still works for this session
     }
     setIsDark(next);
+    window.dispatchEvent(new CustomEvent(THEME_CHANGED_EVENT));
   }
 
   return (

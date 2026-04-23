@@ -6,12 +6,11 @@
  * HistorySidebar and owns the form → API → history flow.
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ListingForm from "@/components/ListingForm";
 import VariantCard from "@/components/VariantCard";
 import HistorySidebar from "@/components/HistorySidebar";
-import GuidelinesPanel from "@/components/GuidelinesPanel";
-import ThemeToggle from "@/components/ThemeToggle";
+import Masthead from "@/components/Masthead";
 import { addGeneration, getGuidelines } from "@/lib/history";
 import type {
   ListingInput,
@@ -26,13 +25,6 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [historyRefresh, setHistoryRefresh] = useState(0);
-  const [guidelinesOpen, setGuidelinesOpen] = useState(false);
-  const [hasGuidelines, setHasGuidelines] = useState(false);
-
-  // SSR-safe: read localStorage in an effect, not during render.
-  useEffect(() => {
-    setHasGuidelines(getGuidelines().trim().length > 0);
-  }, [guidelinesOpen]);
 
   async function handleGenerate(input: ListingInput) {
     setIsGenerating(true);
@@ -82,62 +74,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen" style={{ background: "var(--canvas)", color: "var(--ink)" }}>
-      {/* Masthead — ink bar with gold trim */}
-      <header
-        className="border-b-2"
-        style={{ background: "var(--header-bg)", color: "var(--header-fg)", borderColor: "var(--header-trim)" }}
-      >
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-5 flex items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 border flex items-center justify-center rounded-sm"
-              style={{ borderColor: "var(--header-trim)" }}
-            >
-              <span className="font-serif text-lg leading-none" style={{ color: "var(--header-trim)" }}>L</span>
-            </div>
-            <div>
-              <h1 className="font-serif text-2xl tracking-wide leading-none">Listing Desk</h1>
-              <p className="text-[10px] tracking-[0.25em] uppercase mt-1" style={{ color: "var(--header-trim)" }}>
-                Atelier for Agents
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-6">
-            <nav className="hidden md:flex items-center gap-8 text-sm">
-              <span
-                className="relative pb-1"
-                style={{ color: "var(--header-fg)" }}
-              >
-                Generator
-                <span
-                  className="absolute bottom-0 left-0 right-0 h-[2px]"
-                  style={{ background: "var(--header-trim)" }}
-                />
-              </span>
-              <span className="opacity-70 pb-1">Archive</span>
-              <button
-                type="button"
-                onClick={() => setGuidelinesOpen(true)}
-                className="pb-1 hover:opacity-100 transition-opacity relative"
-                style={{ color: "var(--header-fg)", opacity: hasGuidelines ? 1 : 0.7 }}
-              >
-                Guidelines
-                {hasGuidelines && (
-                  <span
-                    className="absolute -top-1 -right-3 text-[9px] font-serif italic"
-                    style={{ color: "var(--header-trim)" }}
-                    aria-label="Guidelines are active"
-                  >
-                    ●
-                  </span>
-                )}
-              </button>
-              <span className="opacity-70 pb-1">Account</span>
-            </nav>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+      <Masthead active="generator" />
 
       {/* Meta strip */}
       <div className="border-b" style={{ borderColor: "rgba(var(--ink-rgb),0.1)", background: "rgba(var(--ink-rgb),0.03)" }}>
@@ -222,12 +159,6 @@ export default function Home() {
 
           <HistorySidebar refreshKey={historyRefresh} />
         </div>
-
-        <GuidelinesPanel
-          open={guidelinesOpen}
-          onClose={() => setGuidelinesOpen(false)}
-          onSaved={() => setHasGuidelines(getGuidelines().trim().length > 0)}
-        />
 
         <footer
           className="mt-16 pt-6 border-t flex items-center justify-between text-[10px] tracking-[0.3em] uppercase"
