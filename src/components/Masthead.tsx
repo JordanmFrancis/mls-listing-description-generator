@@ -18,6 +18,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getGuidelines } from "@/lib/history";
+import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "./ThemeToggle";
 
 export const GUIDELINES_UPDATED_EVENT = "listing-desk:guidelines-updated";
@@ -30,6 +31,7 @@ interface Props {
 
 export default function Masthead({ active = "generator" }: Props) {
   const [hasGuidelines, setHasGuidelines] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     function refresh() {
@@ -42,6 +44,19 @@ export default function Masthead({ active = "generator" }: Props) {
       window.removeEventListener("storage", refresh);
       window.removeEventListener(GUIDELINES_UPDATED_EVENT, refresh);
     };
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setEmail(data.user?.email ?? null);
+    });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setEmail(session?.user?.email ?? null);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -75,12 +90,49 @@ export default function Masthead({ active = "generator" }: Props) {
               active={active}
               badge={hasGuidelines}
             />
-            <NavLink href="/" label="Account" activeLabel="account" active={active} muted />
+            <AccountLink email={email} />
           </nav>
           <ThemeToggle />
         </div>
       </div>
     </header>
+  );
+}
+
+function AccountLink({ email }: { email: string | null }) {
+  if (!email) {
+    return (
+      <Link
+        href="/login"
+        className="pb-1 transition-opacity hover:opacity-100"
+        style={{ color: "var(--header-fg)", opacity: 0.85 }}
+      >
+        Sign in
+      </Link>
+    );
+  }
+
+  const short = email.length > 22 ? `${email.slice(0, 20)}…` : email;
+
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        className="pb-1 text-[11px] tracking-[0.2em] uppercase truncate max-w-[180px]"
+        style={{ color: "var(--header-trim)" }}
+        title={email}
+      >
+        {short}
+      </span>
+      <form action="/auth/signout" method="post">
+        <button
+          type="submit"
+          className="pb-1 text-sm hover:opacity-100 transition-opacity"
+          style={{ color: "var(--header-fg)", opacity: 0.7 }}
+        >
+          Sign out
+        </button>
+      </form>
+    </div>
   );
 }
 
