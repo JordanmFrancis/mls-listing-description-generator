@@ -34,7 +34,7 @@ export default function VariantCard({ variant, index }: Props) {
   const rest = variant.text.slice(1);
 
   return (
-    <article className="border-t pt-6" style={{ borderColor: "rgba(26,26,26,0.2)" }}>
+    <article className="border-t pt-6" style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
       <div className="flex items-baseline justify-between mb-4 flex-wrap gap-3">
         <div className="flex items-baseline gap-4">
           <span className="font-serif text-2xl" style={{ color: "var(--accent)" }}>
@@ -43,7 +43,7 @@ export default function VariantCard({ variant, index }: Props) {
           <h3 className="font-serif text-2xl">{variant.label}</h3>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-[10px] tracking-[0.2em] uppercase font-mono" style={{ color: "rgba(26,26,26,0.5)" }}>
+          <span className="text-[10px] tracking-[0.2em] uppercase font-mono" style={{ color: "rgba(var(--ink-rgb),0.5)" }}>
             {wordCount} words
           </span>
           <button
@@ -53,7 +53,7 @@ export default function VariantCard({ variant, index }: Props) {
             style={
               copied
                 ? { borderColor: "var(--accent)", color: "var(--accent)", background: "transparent" }
-                : { borderColor: "rgba(26,26,26,0.4)", color: "var(--ink)", background: "transparent" }
+                : { borderColor: "rgba(var(--ink-rgb),0.4)", color: "var(--ink)", background: "transparent" }
             }
           >
             {copied ? "Copied ✓" : "Copy"}
@@ -62,7 +62,7 @@ export default function VariantCard({ variant, index }: Props) {
       </div>
       <p
         className="font-serif text-[17px] leading-[1.75] whitespace-pre-wrap"
-        style={{ color: "rgba(26,26,26,0.9)" }}
+        style={{ color: "rgba(var(--ink-rgb),0.9)" }}
       >
         <span
           className="float-left font-serif text-[56px] leading-[0.85] mr-2 mt-1"

@@ -41,7 +41,7 @@ export default function HistorySidebar({ refreshKey }: Props) {
   }, [refreshKey]);
 
   return (
-    <aside className="lg:border-l lg:pl-10" style={{ borderColor: "rgba(26,26,26,0.2)" }}>
+    <aside className="lg:border-l lg:pl-10" style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
       <div className="lg:sticky lg:top-10">
         <button
           type="button"
@@ -55,13 +55,13 @@ export default function HistorySidebar({ refreshKey }: Props) {
             <h3 className="font-serif text-2xl leading-tight">
               Previously composed.
               {history.length > 0 && (
-                <span className="ml-3 font-sans text-xs uppercase tracking-[0.2em] font-normal" style={{ color: "rgba(26,26,26,0.5)" }}>
+                <span className="ml-3 font-sans text-xs uppercase tracking-[0.2em] font-normal" style={{ color: "rgba(var(--ink-rgb),0.5)" }}>
                   {history.length}
                 </span>
               )}
             </h3>
           </div>
-          <span className="text-sm font-mono" style={{ color: "rgba(26,26,26,0.5)" }}>
+          <span className="text-sm font-mono" style={{ color: "rgba(var(--ink-rgb),0.5)" }}>
             {collapsed ? "▸" : "▾"}
           </span>
         </button>
@@ -69,7 +69,7 @@ export default function HistorySidebar({ refreshKey }: Props) {
         {!collapsed && (
           <>
             {history.length === 0 ? (
-              <p className="font-serif italic text-sm" style={{ color: "rgba(26,26,26,0.6)" }}>
+              <p className="font-serif italic text-sm" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
                 Nothing composed yet. Fill in the particulars and draft your first.
               </p>
             ) : (
@@ -80,7 +80,7 @@ export default function HistorySidebar({ refreshKey }: Props) {
                     <li
                       key={gen.id}
                       className="border-b pb-5"
-                      style={{ borderColor: "rgba(26,26,26,0.1)" }}
+                      style={{ borderColor: "rgba(var(--ink-rgb),0.1)" }}
                     >
                       <button
                         type="button"
@@ -90,13 +90,13 @@ export default function HistorySidebar({ refreshKey }: Props) {
                         <div className="flex items-baseline justify-between mb-1">
                           <span
                             className="text-[10px] tracking-[0.25em] uppercase font-mono"
-                            style={{ color: "rgba(26,26,26,0.4)" }}
+                            style={{ color: "rgba(var(--ink-rgb),0.4)" }}
                           >
                             № {String(i + 1).padStart(2, "0")}
                           </span>
                           <span
                             className="text-[10px] tracking-[0.2em] uppercase"
-                            style={{ color: "rgba(26,26,26,0.5)" }}
+                            style={{ color: "rgba(var(--ink-rgb),0.5)" }}
                           >
                             {formatRelativeTime(gen.createdAt)}
                           </span>
@@ -119,7 +119,7 @@ export default function HistorySidebar({ refreshKey }: Props) {
                               </div>
                               <p
                                 className="font-serif text-xs leading-relaxed whitespace-pre-wrap"
-                                style={{ color: "rgba(26,26,26,0.8)" }}
+                                style={{ color: "rgba(var(--ink-rgb),0.8)" }}
                               >
                                 {v.text}
                               </p>

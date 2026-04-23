@@ -45,12 +45,12 @@ interface Props {
 const FEATURES_SOFT_WARN = 400;
 const FEATURES_HARD_LIMIT = 500;
 
-const INK_BORDER = "rgba(26,26,26,0.3)";
-const INK_BORDER_STRONG = "rgba(26,26,26,0.8)";
-const INK_BORDER_LIGHT = "rgba(26,26,26,0.15)";
+const INK_BORDER = "rgba(var(--ink-rgb),0.3)";
+const INK_BORDER_STRONG = "rgba(var(--ink-rgb),0.8)";
+const INK_BORDER_LIGHT = "rgba(var(--ink-rgb),0.15)";
 
 function eyebrowStyle(): React.CSSProperties {
-  return { color: "rgba(26,26,26,0.6)" };
+  return { color: "rgba(var(--ink-rgb),0.6)" };
 }
 
 export default function ListingForm({ onSubmit, isGenerating }: Props) {
@@ -194,10 +194,10 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
           className="block border border-dashed p-8 text-center cursor-pointer transition-colors hover:border-[color:var(--accent)]"
           style={{ borderColor: INK_BORDER }}
         >
-          <div className="font-serif italic text-lg mb-2" style={{ color: "rgba(26,26,26,0.7)" }}>
+          <div className="font-serif italic text-lg mb-2" style={{ color: "rgba(var(--ink-rgb),0.7)" }}>
             Upload a tax card or property report
           </div>
-          <div className="text-xs tracking-wide" style={{ color: "rgba(26,26,26,0.5)" }}>
+          <div className="text-xs tracking-wide" style={{ color: "rgba(var(--ink-rgb),0.5)" }}>
             PDF or image, up to 5 MB. We&apos;ll auto-fill what we can read — revise anything before drafting.
           </div>
           <input
@@ -209,7 +209,7 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
             className="sr-only"
           />
           {isExtracting && (
-            <div className="mt-3 text-xs tracking-widest uppercase" style={{ color: "rgba(26,26,26,0.6)" }}>
+            <div className="mt-3 text-xs tracking-widest uppercase" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
               Reading document…
             </div>
           )}
@@ -369,7 +369,7 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
                     ? "#a33a3a"
                     : featuresOverSoft
                       ? "#a8772a"
-                      : "rgba(26,26,26,0.5)",
+                      : "rgba(var(--ink-rgb),0.5)",
                 }}
               >
                 {featureWordCount} / 500 words
@@ -418,7 +418,7 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
               <>Generate <span style={{ color: "var(--accent)" }}>—</span> Variants</>
             )}
           </button>
-          <span className="font-serif italic text-sm" style={{ color: "rgba(26,26,26,0.55)" }}>
+          <span className="font-serif italic text-sm" style={{ color: "rgba(var(--ink-rgb),0.55)" }}>
             Three compositions will be drafted.
           </span>
         </div>
