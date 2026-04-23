@@ -11,7 +11,7 @@ import ListingForm from "@/components/ListingForm";
 import VariantCard from "@/components/VariantCard";
 import HistorySidebar from "@/components/HistorySidebar";
 import Masthead from "@/components/Masthead";
-import { addGeneration, getGuidelines } from "@/lib/history";
+import { addGeneration } from "@/lib/history";
 import type {
   ListingInput,
   Variant,
@@ -31,13 +31,12 @@ export default function Home() {
     setError(null);
 
     try {
-      const extraGuidelines = getGuidelines();
+      // Guidelines are read server-side from the user's DB row; no need to
+      // ship them in the request body.
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          extraGuidelines ? { ...input, extraGuidelines } : input
-        ),
+        body: JSON.stringify(input),
       });
 
       const data: GenerateResponse = await res.json();
