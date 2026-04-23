@@ -22,6 +22,7 @@ export const PROMPT_VERSION = "listing-generator-v5";
 const MODEL = "claude-sonnet-4-5";
 const MAX_TOKENS = 2048;
 const FEATURES_WORD_LIMIT = 500;
+const GUIDELINES_MAX_CHARS = 4000;
 
 /** Loaded once at module init so disk IO doesn't run on every request. */
 const SYSTEM_PROMPT: string = readFileSync(
@@ -181,26 +182,43 @@ function getClient(): Anthropic {
 }
 
 /**
- * Calls Anthropic with prompt v2 + tool use and returns the 3 variants.
+ * Calls Anthropic with prompt v5 + tool use and returns the 3 variants.
  * Throws GenerateError on any failure.
+ *
+ * `extraGuidelines` — optional agent-defined system-prompt addendum. It's
+ * attached AFTER the cache breakpoint on the base prompt, so editing it
+ * on the client doesn't invalidate the cached base prompt.
  */
 export async function generate(
-  input: ListingInput
+  input: ListingInput,
+  extraGuidelines?: string
 ): Promise<{ variants: Variant[]; promptVersion: string }> {
   const client = getClient();
+
+  const system: Anthropic.TextBlockParam[] = [
+    {
+      type: "text",
+      text: SYSTEM_PROMPT,
+      cache_control: { type: "ephemeral" },
+    },
+  ];
+  const trimmedGuidelines =
+    typeof extraGuidelines === "string"
+      ? extraGuidelines.trim().slice(0, GUIDELINES_MAX_CHARS)
+      : "";
+  if (trimmedGuidelines.length > 0) {
+    system.push({
+      type: "text",
+      text: `## Agent-defined guidelines\n\nThe agent using this tool has added the following rules. Follow them alongside the base rules above. If they conflict with fact discipline (no hallucination, no inventions), fact discipline wins.\n\n${trimmedGuidelines}`,
+    });
+  }
 
   let response: Anthropic.Message;
   try {
     response = await client.messages.create({
       model: MODEL,
       max_tokens: MAX_TOKENS,
-      system: [
-        {
-          type: "text",
-          text: SYSTEM_PROMPT,
-          cache_control: { type: "ephemeral" },
-        },
-      ],
+      system,
       tools: [RETURN_VARIANTS_TOOL],
       tool_choice: { type: "tool", name: "return_listing_variants" },
       messages: [{ role: "user", content: buildUserMessage(input) }],
