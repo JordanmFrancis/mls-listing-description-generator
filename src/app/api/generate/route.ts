@@ -2,12 +2,18 @@
  * POST /api/generate
  *
  * Thin HTTP wrapper over src/lib/generate. Validates the request body,
- * delegates to the generate() helper, and maps thrown GenerateErrors to
- * the { error: string } shape from the CLAUDE.md convention.
+ * reads the user's saved guidelines from Supabase (authoritative — we
+ * never trust client-supplied guideline text), and delegates to generate().
+ *
+ * Middleware already rejects unauthenticated requests with 401 before
+ * they reach this handler, but we defensively fetch the user again here
+ * so the RLS query works and so nothing slips through on a middleware
+ * config change.
  */
 
 import { NextResponse } from "next/server";
 import { generate, validateInput, GenerateError } from "@/lib/generate";
+import { createClient } from "@/lib/supabase/server";
 import type { ApiError, GenerateSuccess } from "@/lib/types";
 
 export const runtime = "nodejs"; // generate.ts reads from fs — requires node runtime, not edge
@@ -38,12 +44,28 @@ export async function POST(
     );
   }
 
-  const extraGuidelines =
-    body &&
-    typeof body === "object" &&
-    typeof (body as { extraGuidelines?: unknown }).extraGuidelines === "string"
-      ? ((body as { extraGuidelines: string }).extraGuidelines)
-      : undefined;
+  // Read the user's guidelines from Supabase. Client-supplied guideline
+  // text in the request body is IGNORED — DB is the source of truth.
+  let extraGuidelines: string | undefined;
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+    }
+    const { data } = await supabase
+      .from("guidelines")
+      .select("text")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const text = data?.text?.trim();
+    if (text) extraGuidelines = text;
+  } catch {
+    // Non-fatal — proceed without guidelines rather than blocking the generate.
+    extraGuidelines = undefined;
+  }
 
   try {
     const result = await generate(input, extraGuidelines);

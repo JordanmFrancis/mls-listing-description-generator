@@ -17,7 +17,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getGuidelines } from "@/lib/history";
+import { getGuidelines } from "@/lib/guidelines";
 import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "./ThemeToggle";
 
@@ -34,14 +34,16 @@ export default function Masthead({ active = "generator" }: Props) {
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    function refresh() {
-      setHasGuidelines(getGuidelines().trim().length > 0);
+    let alive = true;
+    async function refresh() {
+      const text = await getGuidelines();
+      if (!alive) return;
+      setHasGuidelines(text.trim().length > 0);
     }
     refresh();
-    window.addEventListener("storage", refresh);
     window.addEventListener(GUIDELINES_UPDATED_EVENT, refresh);
     return () => {
-      window.removeEventListener("storage", refresh);
+      alive = false;
       window.removeEventListener(GUIDELINES_UPDATED_EVENT, refresh);
     };
   }, []);

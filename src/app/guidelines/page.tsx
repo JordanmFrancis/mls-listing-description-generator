@@ -3,11 +3,11 @@
 /**
  * /guidelines — full-page settings for the Listing Desk.
  *
- * Three sections (all localStorage-backed, no server state):
- *   1. House style — prose guidelines appended to the system prompt on every
- *      generate. Persisted via src/lib/history.ts.
- *   2. Appearance — Light / Dark theme picker.
- *   3. Danger zone — clear saved drafts.
+ * Three sections:
+ *   1. House style — guidelines appended to the system prompt on every
+ *      generate. DB-backed (Supabase `guidelines` table, RLS per user).
+ *   2. Appearance — Light / Dark theme picker (localStorage, client-only).
+ *   3. Danger zone — clear saved drafts (still localStorage until Phase 4).
  *
  * Any save here fires `GUIDELINES_UPDATED_EVENT` so the masthead's brass-dot
  * indicator refreshes without a full reload.
@@ -19,34 +19,50 @@ import Masthead, { GUIDELINES_UPDATED_EVENT } from "@/components/Masthead";
 import ThemePicker from "@/components/ThemePicker";
 import {
   GUIDELINES_MAX_CHARS,
-  clearHistory,
   getGuidelines,
-  getHistory,
   setGuidelines,
-} from "@/lib/history";
+} from "@/lib/guidelines";
+import { clearHistory, getHistory } from "@/lib/history";
 
 export default function GuidelinesPage() {
   const [text, setText] = useState("");
   const [initialText, setInitialText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [historyCount, setHistoryCount] = useState(0);
   const [clearConfirm, setClearConfirm] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
-    const initial = getGuidelines();
-    setText(initial);
-    setInitialText(initial);
+    let alive = true;
+    getGuidelines().then((initial) => {
+      if (!alive) return;
+      setText(initial);
+      setInitialText(initial);
+      setLoading(false);
+    });
     setHistoryCount(getHistory().length);
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const charCount = text.length;
   const overLimit = charCount > GUIDELINES_MAX_CHARS;
   const dirty = text !== initialText;
 
-  function handleSave() {
-    if (overLimit) return;
-    setGuidelines(text);
+  async function handleSave() {
+    if (overLimit || saving) return;
+    setSaving(true);
+    setSaveError(null);
+    const ok = await setGuidelines(text);
+    setSaving(false);
+    if (!ok) {
+      setSaveError("Could not save — please try again.");
+      return;
+    }
     setInitialText(text);
     setSavedAt(Date.now());
     window.dispatchEvent(new CustomEvent(GUIDELINES_UPDATED_EVENT));
@@ -132,11 +148,11 @@ export default function GuidelinesPage() {
             </span>
           </div>
 
-          <div className="mt-5 flex items-center gap-3">
+          <div className="mt-5 flex items-center gap-3 flex-wrap">
             <button
               type="button"
               onClick={handleSave}
-              disabled={overLimit || !dirty}
+              disabled={overLimit || !dirty || saving || loading}
               className="text-sm tracking-[0.2em] uppercase px-5 py-2 border-2 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{
                 borderColor: "var(--ink)",
@@ -144,7 +160,7 @@ export default function GuidelinesPage() {
                 color: "var(--canvas)",
               }}
             >
-              Save guidelines
+              {saving ? "Saving\u2026" : "Save guidelines"}
             </button>
             <button
               type="button"
@@ -154,13 +170,22 @@ export default function GuidelinesPage() {
             >
               Clear text
             </button>
-            {savedAt && !dirty && (
+            {savedAt && !dirty && !saveError && (
               <span
                 className="font-serif italic text-sm"
                 style={{ color: "var(--accent)" }}
                 aria-live="polite"
               >
                 Saved.
+              </span>
+            )}
+            {saveError && (
+              <span
+                className="font-serif italic text-sm"
+                style={{ color: "#a82828" }}
+                aria-live="polite"
+              >
+                {saveError}
               </span>
             )}
           </div>
