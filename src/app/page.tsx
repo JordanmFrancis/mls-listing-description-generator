@@ -76,16 +76,6 @@ export default function Home() {
     <main className="min-h-screen" style={{ background: "var(--canvas)", color: "var(--ink)" }}>
       <Masthead active="generator" />
 
-      {/* Meta strip */}
-      <div className="border-b" style={{ borderColor: "rgba(var(--ink-rgb),0.1)", background: "rgba(var(--ink-rgb),0.03)" }}>
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-3 flex items-center justify-between text-[10px] tracking-[0.3em] uppercase" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
-          <span>Issue 01 · New Composition</span>
-          <span>
-            Saved locally <span style={{ color: "var(--accent)" }}>—</span> draft
-          </span>
-        </div>
-      </div>
-
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-10 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10">
           {/* Main column */}

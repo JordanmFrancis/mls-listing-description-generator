@@ -71,22 +71,6 @@ export default function GuidelinesPage() {
     <main className="min-h-screen" style={{ background: "var(--canvas)", color: "var(--ink)" }}>
       <Masthead active="guidelines" />
 
-      {/* Meta strip */}
-      <div
-        className="border-b"
-        style={{ borderColor: "rgba(var(--ink-rgb),0.1)", background: "rgba(var(--ink-rgb),0.03)" }}
-      >
-        <div
-          className="max-w-[1400px] mx-auto px-6 md:px-10 py-3 flex items-center justify-between text-[10px] tracking-[0.3em] uppercase"
-          style={{ color: "rgba(var(--ink-rgb),0.6)" }}
-        >
-          <span>Issue 01 · House Rules</span>
-          <span>
-            Saved locally <span style={{ color: "var(--accent)" }}>—</span> to this browser
-          </span>
-        </div>
-      </div>
-
       <div className="max-w-[920px] mx-auto px-6 md:px-10 py-10 md:py-12">
         <div className="pb-8 mb-10 border-b" style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
           <div
