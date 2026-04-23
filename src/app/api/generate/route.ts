@@ -38,8 +38,15 @@ export async function POST(
     );
   }
 
+  const extraGuidelines =
+    body &&
+    typeof body === "object" &&
+    typeof (body as { extraGuidelines?: unknown }).extraGuidelines === "string"
+      ? ((body as { extraGuidelines: string }).extraGuidelines)
+      : undefined;
+
   try {
-    const result = await generate(input);
+    const result = await generate(input, extraGuidelines);
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
     if (err instanceof GenerateError) {
