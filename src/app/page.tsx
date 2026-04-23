@@ -11,11 +11,9 @@ import ListingForm from "@/components/ListingForm";
 import VariantCard from "@/components/VariantCard";
 import HistorySidebar from "@/components/HistorySidebar";
 import Masthead from "@/components/Masthead";
-import { addGeneration } from "@/lib/history";
 import type {
   ListingInput,
   Variant,
-  Generation,
   GenerateResponse,
 } from "@/lib/types";
 import { isApiError } from "@/lib/types";
@@ -51,14 +49,8 @@ export default function Home() {
 
       setVariants(data.variants);
 
-      const gen: Generation = {
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-        promptVersion: data.promptVersion,
-        input,
-        variants: data.variants,
-      };
-      addGeneration(gen);
+      // Server-side /api/generate already inserted the generation into
+      // the DB. Bump the sidebar so it re-fetches and picks up the new row.
       setHistoryRefresh((k) => k + 1);
     } catch (err) {
       const msg =

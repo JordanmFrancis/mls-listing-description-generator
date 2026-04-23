@@ -1,103 +1,94 @@
 /**
- * The ONLY module that touches localStorage. Per CLAUDE.md and the spec,
- * no other file in the app should call localStorage.getItem / setItem directly.
+ * Generation archive — DB-backed via Supabase.
  *
- * Schema lives in src/lib/types.ts. Storage contract from specs/listing-generator.md:
- *   - key: "listing-generator-history"
- *   - value: JSON array of Generation objects
- *   - Never mutate existing entries. New generations are prepended (newest first).
- *   - Cap at 100 entries; drop oldest (tail) when exceeded.
- *   - Reads tolerate malformed or partial data: invalid entries are dropped silently.
- *   - Reads tolerate SSR (window undefined → return []).
+ * Schema lives in the public.generations table (migrations in the
+ * listing-desk Supabase project). RLS ensures each signed-in user only
+ * sees their own rows.
+ *
+ * These helpers are for the CLIENT — they use the browser Supabase
+ * client and include the user's session cookies automatically. Server
+ * code (/api/generate) inserts new rows directly via the server client
+ * after a successful Anthropic call; it does NOT go through this module.
  */
 
-import type { Generation, ListingInput, Variant } from "./types";
+import { createClient } from "@/lib/supabase/client";
+import type { Generation, Variant, ListingInput } from "./types";
 
-export const HISTORY_KEY = "listing-generator-history";
 export const HISTORY_LIMIT = 100;
 
-function hasWindow(): boolean {
-  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+interface GenerationRow {
+  id: string;
+  created_at: string;
+  prompt_version: string;
+  input: ListingInput;
+  variants: Variant[];
 }
 
-function isValidVariant(v: unknown): v is Variant {
-  if (!v || typeof v !== "object") return false;
-  const o = v as Record<string, unknown>;
-  return typeof o.label === "string" && typeof o.text === "string";
-}
-
-function isValidInput(i: unknown): i is ListingInput {
-  if (!i || typeof i !== "object") return false;
-  const o = i as Record<string, unknown>;
-  return (
-    typeof o.address === "string" &&
-    typeof o.beds === "number" &&
-    typeof o.baths === "number" &&
-    typeof o.features === "string"
-  );
-}
-
-function isValidGeneration(g: unknown): g is Generation {
-  if (!g || typeof g !== "object") return false;
-  const o = g as Record<string, unknown>;
-  return (
-    typeof o.id === "string" &&
-    typeof o.createdAt === "string" &&
-    typeof o.promptVersion === "string" &&
-    isValidInput(o.input) &&
-    Array.isArray(o.variants) &&
-    o.variants.every(isValidVariant)
-  );
+function rowToGeneration(row: GenerationRow): Generation {
+  return {
+    id: row.id,
+    createdAt: row.created_at,
+    promptVersion: row.prompt_version,
+    input: row.input,
+    variants: row.variants,
+  };
 }
 
 /**
- * Reads the full history. Returns an empty array on any failure
- * (missing key, malformed JSON, server-side render). Per-entry validation
- * silently drops malformed entries so a single bad record can't crash the UI.
+ * Lists the signed-in user's generations, newest first, capped at
+ * HISTORY_LIMIT. Returns [] on any failure (not signed in, network error,
+ * RLS rejection) so the UI can render an empty archive instead of
+ * crashing.
  */
-export function getHistory(): Generation[] {
-  if (!hasWindow()) return [];
-  try {
-    const raw = window.localStorage.getItem(HISTORY_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed.filter(isValidGeneration);
-  } catch {
-    return [];
-  }
+export async function listHistory(): Promise<Generation[]> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("generations")
+    .select("id, created_at, prompt_version, input, variants")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(HISTORY_LIMIT);
+
+  if (error || !data) return [];
+  return data.map(rowToGeneration);
+}
+
+/** Current number of saved generations for the user. Returns 0 on failure. */
+export async function getHistoryCount(): Promise<number> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return 0;
+
+  const { count, error } = await supabase
+    .from("generations")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  if (error) return 0;
+  return count ?? 0;
 }
 
 /**
- * Prepends a new generation to history (newest at index 0). Caps at
- * HISTORY_LIMIT, dropping the oldest entries from the tail. Existing
- * entries are never mutated.
+ * Wipes all of the user's generations. Resolves to true on success so
+ * the caller can update the count UI; false on any failure.
  */
-export function addGeneration(gen: Generation): void {
-  if (!hasWindow()) return;
-  try {
-    const current = getHistory();
-    const next = [gen, ...current].slice(0, HISTORY_LIMIT);
-    window.localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
-  } catch {
-    // localStorage full, quota exceeded, or serialization error —
-    // silently drop the write. History is best-effort; a failed save
-    // must not break the main flow of showing the user their variants.
-  }
-}
+export async function clearHistory(): Promise<boolean> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return false;
 
-/** Looks up a single generation by id. Returns null if not found. */
-export function getGenerationById(id: string): Generation | null {
-  const all = getHistory();
-  return all.find((g) => g.id === id) ?? null;
-}
-
-/** Wipes all history. Useful for dev/testing and a future "clear history" button. */
-export function clearHistory(): void {
-  if (!hasWindow()) return;
-  try {
-    window.localStorage.removeItem(HISTORY_KEY);
-  } catch {
-    // ignore
-  }
+  const { error } = await supabase
+    .from("generations")
+    .delete()
+    .eq("user_id", user.id);
+  return !error;
 }
