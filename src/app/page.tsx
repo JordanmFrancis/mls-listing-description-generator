@@ -6,11 +6,12 @@
  * HistorySidebar and owns the form → API → history flow.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ListingForm from "@/components/ListingForm";
 import VariantCard from "@/components/VariantCard";
 import HistorySidebar from "@/components/HistorySidebar";
-import { addGeneration } from "@/lib/history";
+import GuidelinesPanel from "@/components/GuidelinesPanel";
+import { addGeneration, getGuidelines } from "@/lib/history";
 import type {
   ListingInput,
   Variant,
@@ -24,16 +25,26 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [historyRefresh, setHistoryRefresh] = useState(0);
+  const [guidelinesOpen, setGuidelinesOpen] = useState(false);
+  const [hasGuidelines, setHasGuidelines] = useState(false);
+
+  // SSR-safe: read localStorage in an effect, not during render.
+  useEffect(() => {
+    setHasGuidelines(getGuidelines().trim().length > 0);
+  }, [guidelinesOpen]);
 
   async function handleGenerate(input: ListingInput) {
     setIsGenerating(true);
     setError(null);
 
     try {
+      const extraGuidelines = getGuidelines();
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
+        body: JSON.stringify(
+          extraGuidelines ? { ...input, extraGuidelines } : input
+        ),
       });
 
       const data: GenerateResponse = await res.json();
@@ -102,7 +113,23 @@ export default function Home() {
               />
             </span>
             <span className="opacity-70 pb-1">Archive</span>
-            <span className="opacity-70 pb-1">Guidelines</span>
+            <button
+              type="button"
+              onClick={() => setGuidelinesOpen(true)}
+              className="pb-1 hover:opacity-100 transition-opacity relative"
+              style={{ color: "var(--header-fg)", opacity: hasGuidelines ? 1 : 0.7 }}
+            >
+              Guidelines
+              {hasGuidelines && (
+                <span
+                  className="absolute -top-1 -right-3 text-[9px] font-serif italic"
+                  style={{ color: "var(--header-trim)" }}
+                  aria-label="Guidelines are active"
+                >
+                  ●
+                </span>
+              )}
+            </button>
             <span className="opacity-70 pb-1">Account</span>
           </nav>
         </div>
@@ -191,6 +218,12 @@ export default function Home() {
 
           <HistorySidebar refreshKey={historyRefresh} />
         </div>
+
+        <GuidelinesPanel
+          open={guidelinesOpen}
+          onClose={() => setGuidelinesOpen(false)}
+          onSaved={() => setHasGuidelines(getGuidelines().trim().length > 0)}
+        />
 
         <footer
           className="mt-16 pt-6 border-t flex items-center justify-between text-[10px] tracking-[0.3em] uppercase"

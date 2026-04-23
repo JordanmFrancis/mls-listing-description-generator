@@ -15,6 +15,8 @@ import type { Generation, ListingInput, Variant } from "./types";
 
 export const HISTORY_KEY = "listing-generator-history";
 export const HISTORY_LIMIT = 100;
+export const GUIDELINES_KEY = "listing-generator-guidelines";
+export const GUIDELINES_MAX_CHARS = 4000;
 
 function hasWindow(): boolean {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -97,6 +99,36 @@ export function clearHistory(): void {
   if (!hasWindow()) return;
   try {
     window.localStorage.removeItem(HISTORY_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * Custom system-prompt guidelines the agent has saved for themselves. These
+ * are appended to the base prompt on every generate call. Stored as a single
+ * plain string; empty string means "no custom guidelines".
+ */
+export function getGuidelines(): string {
+  if (!hasWindow()) return "";
+  try {
+    const raw = window.localStorage.getItem(GUIDELINES_KEY);
+    if (typeof raw !== "string") return "";
+    return raw.slice(0, GUIDELINES_MAX_CHARS);
+  } catch {
+    return "";
+  }
+}
+
+export function setGuidelines(text: string): void {
+  if (!hasWindow()) return;
+  try {
+    const trimmed = text.slice(0, GUIDELINES_MAX_CHARS);
+    if (trimmed.length === 0) {
+      window.localStorage.removeItem(GUIDELINES_KEY);
+    } else {
+      window.localStorage.setItem(GUIDELINES_KEY, trimmed);
+    }
   } catch {
     // ignore
   }

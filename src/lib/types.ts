@@ -29,8 +29,15 @@ export interface Generation {
   variants: Variant[];
 }
 
-/** Request body POSTed to /api/generate */
-export type GenerateRequest = ListingInput;
+/**
+ * Request body POSTed to /api/generate. The listing fields are required;
+ * `extraGuidelines` carries any agent-defined rules saved on the client
+ * (see src/lib/history.ts → getGuidelines). The server appends them to
+ * the system prompt.
+ */
+export type GenerateRequest = ListingInput & {
+  extraGuidelines?: string;
+};
 
 /** Successful response from /api/generate */
 export interface GenerateSuccess {
