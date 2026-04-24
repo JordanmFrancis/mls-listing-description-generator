@@ -89,7 +89,7 @@ export default function GuidelinesPage() {
     <main className="min-h-screen" style={{ background: "var(--canvas)", color: "var(--ink)" }}>
       <Masthead active="guidelines" />
 
-      <div className="max-w-[920px] mx-auto px-6 md:px-10 py-10 md:py-12">
+      <div className="max-w-[920px] mx-auto px-5 md:px-10 py-8 md:py-12">
         <div className="pb-8 mb-10 border-b" style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
           <div
             className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium"
@@ -97,7 +97,7 @@ export default function GuidelinesPage() {
           >
             Vol. V — The House Rules
           </div>
-          <h2 className="font-serif text-4xl md:text-5xl leading-tight tracking-tight max-w-2xl">
+          <h2 className="font-serif text-3xl md:text-5xl leading-tight tracking-tight max-w-2xl">
             Guidelines, appearance, and other particulars.
           </h2>
           <p
@@ -224,7 +224,7 @@ export default function GuidelinesPage() {
             cannot be undone.
           </p>
           <div
-            className="border-2 px-5 py-4 flex items-center justify-between gap-4"
+            className="border-2 px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
             style={{ borderColor: "rgba(168,40,40,0.3)" }}
           >
             <div>

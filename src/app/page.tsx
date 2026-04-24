@@ -67,7 +67,7 @@ export default function Home() {
     <main className="min-h-screen" style={{ background: "var(--canvas)", color: "var(--ink)" }}>
       <Masthead active="generator" />
 
-      <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-10 md:py-12">
+      <div className="max-w-[1400px] mx-auto px-5 md:px-10 py-8 md:py-12">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-10">
           {/* Main column */}
           <div className="min-w-0 flex flex-col gap-10">
@@ -76,7 +76,7 @@ export default function Home() {
               <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: "var(--accent)" }}>
                 Vol. V — April · Twenty Twenty-Six
               </div>
-              <h2 className="font-serif text-4xl md:text-5xl leading-tight tracking-tight max-w-2xl">
+              <h2 className="font-serif text-3xl md:text-5xl leading-tight tracking-tight max-w-2xl">
                 A quiet instrument for the working agent.
               </h2>
               <p className="font-serif italic text-base mt-4 max-w-xl" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
@@ -142,7 +142,7 @@ export default function Home() {
         </div>
 
         <footer
-          className="mt-16 pt-6 border-t flex items-center justify-between text-[10px] tracking-[0.3em] uppercase"
+          className="mt-16 pt-6 border-t flex flex-wrap items-center justify-between gap-y-2 gap-x-6 text-[10px] tracking-[0.3em] uppercase"
           style={{ borderColor: "rgba(var(--ink-rgb),0.2)", color: "rgba(var(--ink-rgb),0.5)" }}
         >
           <span>Listing Desk — Composed with care</span>
