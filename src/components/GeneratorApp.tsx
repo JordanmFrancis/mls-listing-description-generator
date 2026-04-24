@@ -33,6 +33,21 @@ export default function GeneratorApp() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [historyRefresh, setHistoryRefresh] = useState(0);
+  const [copiedAll, setCopiedAll] = useState(false);
+
+  async function handleCopyAll() {
+    if (!variants) return;
+    const block = variants
+      .map((v) => `${v.label.toUpperCase()}\n\n${v.text}`)
+      .join("\n\n———\n\n");
+    try {
+      await navigator.clipboard.writeText(block);
+      setCopiedAll(true);
+      setTimeout(() => setCopiedAll(false), 2000);
+    } catch {
+      // clipboard API unavailable — per-variant Copy buttons still work
+    }
+  }
 
   async function handleGenerate(input: ListingInput) {
     setIsGenerating(true);
@@ -127,9 +142,23 @@ export default function GeneratorApp() {
                 <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: "var(--accent)" }}>
                   Section III — The Drafts
                 </div>
-                <h3 className="font-serif text-3xl mb-8 leading-tight">
-                  Three readings of the same house.
-                </h3>
+                <div className="flex items-baseline justify-between mb-8 gap-4 flex-wrap">
+                  <h3 className="font-serif text-3xl leading-tight">
+                    Three readings of the same house.
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={handleCopyAll}
+                    className="text-[10px] tracking-[0.3em] uppercase border px-4 py-2 transition-colors"
+                    style={
+                      copiedAll
+                        ? { borderColor: "var(--accent)", color: "var(--accent)", background: "transparent" }
+                        : { borderColor: "rgba(var(--ink-rgb),0.4)", color: "var(--ink)", background: "transparent" }
+                    }
+                  >
+                    {copiedAll ? "Copied all ✓" : "Copy all three"}
+                  </button>
+                </div>
                 <div className="flex flex-col gap-8">
                   {variants.map((v, idx) => (
                     <VariantCard
