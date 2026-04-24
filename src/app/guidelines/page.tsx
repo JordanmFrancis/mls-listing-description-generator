@@ -7,7 +7,7 @@
  *   1. House style — guidelines appended to the system prompt on every
  *      generate. DB-backed (Supabase `guidelines` table, RLS per user).
  *   2. Appearance — Light / Dark theme picker (localStorage, client-only).
- *   3. Danger zone — clear saved drafts (still localStorage until Phase 4).
+ *   3. Danger zone — clear saved drafts from the user's account (DB-backed).
  *
  * Any save here fires `GUIDELINES_UPDATED_EVENT` so the masthead's brass-dot
  * indicator refreshes without a full reload.
@@ -22,7 +22,7 @@ import {
   getGuidelines,
   setGuidelines,
 } from "@/lib/guidelines";
-import { clearHistory, getHistory } from "@/lib/history";
+import { clearHistory, getHistoryCount } from "@/lib/history";
 
 export default function GuidelinesPage() {
   const [text, setText] = useState("");
@@ -43,7 +43,9 @@ export default function GuidelinesPage() {
       setInitialText(initial);
       setLoading(false);
     });
-    setHistoryCount(getHistory().length);
+    getHistoryCount().then((n) => {
+      if (alive) setHistoryCount(n);
+    });
     return () => {
       alive = false;
     };
@@ -73,13 +75,13 @@ export default function GuidelinesPage() {
     textareaRef.current?.focus();
   }
 
-  function handleClearHistory() {
+  async function handleClearHistory() {
     if (!clearConfirm) {
       setClearConfirm(true);
       return;
     }
-    clearHistory();
-    setHistoryCount(0);
+    const ok = await clearHistory();
+    if (ok) setHistoryCount(0);
     setClearConfirm(false);
   }
 
@@ -102,8 +104,8 @@ export default function GuidelinesPage() {
             className="font-serif italic text-base mt-4 max-w-xl"
             style={{ color: "rgba(var(--ink-rgb),0.6)" }}
           >
-            Set your house style once and every composition will follow it. All settings are saved
-            locally to this browser.
+            Set your house style once and every composition will follow it. Guidelines and drafts
+            are saved to your account; theme stays on this browser.
           </p>
         </div>
 
@@ -218,7 +220,7 @@ export default function GuidelinesPage() {
           </div>
           <h3 className="font-serif text-3xl mb-2 leading-tight">Clear saved drafts.</h3>
           <p className="font-serif italic text-sm mb-5" style={{ color: "rgba(var(--ink-rgb),0.7)" }}>
-            The Archive keeps your last 100 generations in this browser. Clearing is permanent and
+            The Archive keeps your last 100 generations on your account. Clearing is permanent and
             cannot be undone.
           </p>
           <div

@@ -1,16 +1,15 @@
 "use client";
 
 /**
- * HistorySidebar — editorial "Archive" styled list of past generations from
- * localStorage. Reads via src/lib/history.ts (the only allowed localStorage
- * gateway). The parent passes `refreshKey` that bumps whenever a new
- * generation is appended; that re-reads history without a global store.
+ * HistorySidebar — editorial "Archive" styled list of the signed-in user's
+ * past generations, read from Supabase via src/lib/history.ts.
  *
- * Reads localStorage only after mount to avoid SSR/hydration mismatch.
+ * The parent passes `refreshKey` that bumps whenever a new generation is
+ * archived; that re-fetches history without a global store.
  */
 
 import { useEffect, useState } from "react";
-import { getHistory } from "@/lib/history";
+import { listHistory } from "@/lib/history";
 import type { Generation } from "@/lib/types";
 
 interface Props {
@@ -37,7 +36,13 @@ export default function HistorySidebar({ refreshKey }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    setHistory(getHistory());
+    let alive = true;
+    listHistory().then((rows) => {
+      if (alive) setHistory(rows);
+    });
+    return () => {
+      alive = false;
+    };
   }, [refreshKey]);
 
   return (

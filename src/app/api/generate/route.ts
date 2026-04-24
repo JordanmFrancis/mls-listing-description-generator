@@ -44,17 +44,20 @@ export async function POST(
     );
   }
 
+  // Single Supabase client for this request — used both to read the
+  // user's guidelines and to archive the resulting generation.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+  }
+
   // Read the user's guidelines from Supabase. Client-supplied guideline
   // text in the request body is IGNORED — DB is the source of truth.
   let extraGuidelines: string | undefined;
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-    }
     const { data } = await supabase
       .from("guidelines")
       .select("text")
@@ -63,12 +66,28 @@ export async function POST(
     const text = data?.text?.trim();
     if (text) extraGuidelines = text;
   } catch {
-    // Non-fatal — proceed without guidelines rather than blocking the generate.
+    // Non-fatal — proceed without guidelines rather than blocking generate.
     extraGuidelines = undefined;
   }
 
   try {
     const result = await generate(input, extraGuidelines);
+
+    // Archive the generation. Fire-and-forget: if the insert fails the
+    // user still sees their variants; they just won't show up in the
+    // sidebar until next session. We await for simpler error handling
+    // but never surface DB errors as API errors.
+    try {
+      await supabase.from("generations").insert({
+        user_id: user.id,
+        prompt_version: result.promptVersion,
+        input,
+        variants: result.variants,
+      });
+    } catch {
+      // ignore — generation succeeded, archive is best-effort
+    }
+
     return NextResponse.json(result, { status: 200 });
   } catch (err) {
     if (err instanceof GenerateError) {
