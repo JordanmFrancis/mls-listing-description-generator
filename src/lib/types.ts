@@ -43,6 +43,8 @@ export type GenerateRequest = ListingInput & {
 export interface GenerateSuccess {
   variants: Variant[];
   promptVersion: string;
+  /** The archived row's id. Used by /api/refine to update the same row. */
+  generationId?: string;
 }
 
 /** Error response from /api/generate (per CLAUDE.md convention) */
@@ -74,3 +76,19 @@ export interface ExtractSuccess {
 }
 
 export type ExtractResponse = ExtractSuccess | ApiError;
+
+/** Request body POSTed to /api/refine. */
+export interface RefineRequest {
+  input: ListingInput;
+  currentVariant: Variant;
+  instruction: string;
+  /** Optional — when provided, server updates the DB row's variants in place. */
+  generationId?: string;
+}
+
+export interface RefineSuccess {
+  /** The refined text for the variant. Label is unchanged. */
+  text: string;
+}
+
+export type RefineResponse = RefineSuccess | ApiError;

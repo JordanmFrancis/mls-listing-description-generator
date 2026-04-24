@@ -73,22 +73,29 @@ export async function POST(
   try {
     const result = await generate(input, extraGuidelines);
 
-    // Archive the generation. Fire-and-forget: if the insert fails the
-    // user still sees their variants; they just won't show up in the
-    // sidebar until next session. We await for simpler error handling
-    // but never surface DB errors as API errors.
+    // Archive the generation and grab its id so the client can pass it
+    // back to /api/refine and edits land on the same row. If the insert
+    // fails, the user still sees their variants; they just won't show up
+    // in the sidebar and refinements can't update the DB row until they
+    // re-generate. We never surface DB errors as API errors.
+    let generationId: string | undefined;
     try {
-      await supabase.from("generations").insert({
-        user_id: user.id,
-        prompt_version: result.promptVersion,
-        input,
-        variants: result.variants,
-      });
+      const { data: inserted } = await supabase
+        .from("generations")
+        .insert({
+          user_id: user.id,
+          prompt_version: result.promptVersion,
+          input,
+          variants: result.variants,
+        })
+        .select("id")
+        .single();
+      generationId = inserted?.id;
     } catch {
       // ignore — generation succeeded, archive is best-effort
     }
 
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json({ ...result, generationId }, { status: 200 });
   } catch (err) {
     if (err instanceof GenerateError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
