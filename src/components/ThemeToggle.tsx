@@ -47,27 +47,55 @@ export default function ThemeToggle() {
       onClick={toggle}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      className="w-8 h-8 border flex items-center justify-center transition-colors hover:bg-[color:var(--header-trim)]/10"
+      className="w-8 h-8 border flex items-center justify-center transition-colors hover:bg-[color:var(--header-trim)]/10 ld-press relative overflow-hidden"
       style={{
         borderColor: "var(--header-trim)",
         color: "var(--header-trim)",
         background: "transparent",
       }}
     >
-      {/* Avoid rendering either icon until we know the theme, to prevent a flicker. */}
+      {/* Both icons render together and crossfade/rotate based on state;
+          avoids the hard swap that used to happen on toggle. */}
       {isDark === null ? (
         <span className="block w-3 h-3" />
-      ) : isDark ? (
-        // Sun — shown in dark mode so user sees what they'll get on click
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
-          <circle cx="12" cy="12" r="4" />
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" strokeLinecap="round" />
-        </svg>
       ) : (
-        // Moon
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden>
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" strokeLinejoin="round" />
-        </svg>
+        <>
+          {/* Sun — shown in dark mode so user sees what they'll get on click */}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            aria-hidden
+            className="absolute transition-all duration-300"
+            style={{
+              opacity: isDark ? 1 : 0,
+              transform: isDark ? "rotate(0deg) scale(1)" : "rotate(-40deg) scale(0.6)",
+            }}
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" strokeLinecap="round" />
+          </svg>
+          {/* Moon */}
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            aria-hidden
+            className="absolute transition-all duration-300"
+            style={{
+              opacity: isDark ? 0 : 1,
+              transform: isDark ? "rotate(40deg) scale(0.6)" : "rotate(0deg) scale(1)",
+            }}
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" strokeLinejoin="round" />
+          </svg>
+        </>
       )}
     </button>
   );

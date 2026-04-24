@@ -12,7 +12,7 @@
  * Archive sidebar to pick up the DB-side update.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Variant } from "@/lib/types";
 
 interface Props {
@@ -45,6 +45,19 @@ export default function VariantCard({
   const [instruction, setInstruction] = useState("");
   const [refining, setRefining] = useState(false);
   const [refineError, setRefineError] = useState<string | null>(null);
+  const [justRefined, setJustRefined] = useState(false);
+
+  // Tiny pop on the body when the text is updated in place (post-refine).
+  // Skip the initial render so we don't pop on mount — the card already
+  // animates in via ld-fade-up at the article level.
+  const prevTextRef = useRef(variant.text);
+  useEffect(() => {
+    if (prevTextRef.current === variant.text) return;
+    prevTextRef.current = variant.text;
+    setJustRefined(true);
+    const t = setTimeout(() => setJustRefined(false), 340);
+    return () => clearTimeout(t);
+  }, [variant.text]);
 
   async function handleCopy() {
     try {
@@ -97,8 +110,15 @@ export default function VariantCard({
   const rest = variant.text.slice(1);
   const canRefine = !!input; // hide the affordance if the parent didn't wire it in
 
+  const delayClass =
+    index === 0
+      ? "ld-fade-up"
+      : index === 1
+        ? "ld-fade-up ld-fade-up-delay-1"
+        : "ld-fade-up ld-fade-up-delay-2";
+
   return (
-    <article className="border-t pt-6" style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
+    <article className={`border-t pt-6 ${delayClass}`} style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
       <div className="flex items-baseline justify-between mb-4 flex-wrap gap-3">
         <div className="flex items-baseline gap-4">
           <span className="font-serif text-2xl" style={{ color: "var(--accent)" }}>
@@ -117,7 +137,7 @@ export default function VariantCard({
                 setRefineOpen((o) => !o);
                 setRefineError(null);
               }}
-              className="text-[10px] tracking-[0.3em] uppercase border px-4 py-1.5 transition-colors"
+              className="text-[10px] tracking-[0.3em] uppercase border px-4 py-1.5 transition-colors ld-press hover:border-[color:var(--accent)]"
               style={
                 refineOpen
                   ? { borderColor: "var(--accent)", color: "var(--accent)", background: "transparent" }
@@ -131,7 +151,7 @@ export default function VariantCard({
           <button
             type="button"
             onClick={handleCopy}
-            className="text-[10px] tracking-[0.3em] uppercase border px-4 py-1.5 transition-colors"
+            className={`text-[10px] tracking-[0.3em] uppercase border px-4 py-1.5 transition-colors ld-press hover:border-[color:var(--accent)] ${copied ? "ld-pop" : ""}`}
             style={
               copied
                 ? { borderColor: "var(--accent)", color: "var(--accent)", background: "transparent" }
@@ -144,7 +164,7 @@ export default function VariantCard({
       </div>
 
       <p
-        className="font-serif text-[17px] leading-[1.75] whitespace-pre-wrap"
+        className={`font-serif text-[17px] leading-[1.75] whitespace-pre-wrap ${justRefined ? "ld-fade-up" : ""}`}
         style={{ color: "rgba(var(--ink-rgb),0.9)" }}
       >
         <span
@@ -197,7 +217,7 @@ export default function VariantCard({
             <button
               type="submit"
               disabled={refining || !instruction.trim()}
-              className="text-sm tracking-[0.2em] uppercase px-5 py-2 border-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              className={`text-sm tracking-[0.2em] uppercase px-5 py-2 border-2 disabled:opacity-40 disabled:cursor-not-allowed ld-press ${refining ? "ld-pulse-brass" : ""}`}
               style={{
                 borderColor: "var(--ink)",
                 background: "var(--ink)",
@@ -214,7 +234,7 @@ export default function VariantCard({
                 setInstruction("");
               }}
               disabled={refining}
-              className="text-[11px] tracking-[0.2em] uppercase px-3 py-2"
+              className="text-[11px] tracking-[0.2em] uppercase px-3 py-2 ld-press"
               style={{ color: "rgba(var(--ink-rgb),0.6)" }}
             >
               Cancel

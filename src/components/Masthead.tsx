@@ -129,7 +129,7 @@ export default function Masthead({ active = "generator" }: Props) {
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
             onClick={() => setMenuOpen((o) => !o)}
-            className="w-10 h-10 border flex items-center justify-center"
+            className="w-10 h-10 border flex items-center justify-center ld-press"
             style={{ borderColor: "var(--header-trim)", color: "var(--header-trim)" }}
           >
             {menuOpen ? <CloseIcon /> : <HamburgerIcon />}
@@ -141,7 +141,7 @@ export default function Masthead({ active = "generator" }: Props) {
       {menuOpen && (
         <div
           id="mobile-nav"
-          className="md:hidden border-t"
+          className="md:hidden border-t ld-fade-up"
           style={{ borderColor: "var(--header-trim)", background: "var(--header-bg)" }}
         >
           <nav className="px-5 py-6 flex flex-col gap-4">
@@ -212,7 +212,7 @@ function AccountLink({ email }: { email: string | null }) {
     return (
       <Link
         href="/login"
-        className="pb-1 transition-opacity hover:opacity-100"
+        className="relative pb-1 transition-opacity hover:opacity-100 ld-underline"
         style={{ color: "var(--header-fg)", opacity: 0.85 }}
       >
         Sign in
@@ -234,7 +234,7 @@ function AccountLink({ email }: { email: string | null }) {
       <form action="/auth/signout" method="post">
         <button
           type="submit"
-          className="pb-1 text-sm hover:opacity-100 transition-opacity"
+          className="relative pb-1 text-sm hover:opacity-100 transition-opacity ld-underline ld-press"
           style={{ color: "var(--header-fg)", opacity: 0.7 }}
         >
           Sign out
@@ -260,10 +260,14 @@ function NavLink({
   badge?: boolean;
 }) {
   const isActive = active === activeLabel;
+  // Inactive links get the sweeping hover underline; active links keep
+  // their static brass bar (it would be distracting to animate over it).
   return (
     <Link
       href={href}
-      className="relative pb-1 transition-opacity hover:opacity-100"
+      className={`relative pb-1 transition-opacity hover:opacity-100 ${
+        isActive ? "" : "ld-underline"
+      }`}
       style={{
         color: "var(--header-fg)",
         opacity: isActive || badge ? 1 : muted ? 0.7 : 0.85,
@@ -310,11 +314,12 @@ function MobileNavLink({
     <Link
       href={href}
       onClick={onNavigate}
-      className="flex items-center justify-between py-2 font-serif text-2xl"
+      className="flex items-center justify-between py-2 font-serif text-2xl transition-colors hover:text-[color:var(--header-trim)]"
       style={{
         color: "var(--header-fg)",
         borderLeft: isActive ? "3px solid var(--header-trim)" : "3px solid transparent",
         paddingLeft: "0.75rem",
+        transition: "border-color 220ms ease, color 220ms ease",
       }}
       aria-current={isActive ? "page" : undefined}
     >

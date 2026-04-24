@@ -405,7 +405,7 @@ export default function ListingForm({ onSubmit, isGenerating }: Props) {
           <button
             type="submit"
             disabled={isGenerating || featuresOverHard}
-            className="px-10 py-3 text-[11px] tracking-[0.3em] uppercase border transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`px-10 py-3 text-[11px] tracking-[0.3em] uppercase border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ld-press hover:border-[color:var(--accent)] ${isGenerating ? "ld-pulse-brass" : ""}`}
             style={{
               background: "var(--header-bg)",
               color: "var(--header-fg)",

@@ -114,7 +114,7 @@ function LoginPageInner() {
         <button
           type="button"
           onClick={signInWithGoogle}
-          className="w-full flex items-center justify-center gap-3 border-2 px-4 py-3 text-sm tracking-[0.2em] uppercase transition-colors hover:bg-[color:rgba(var(--ink-rgb),0.04)]"
+          className="w-full flex items-center justify-center gap-3 border-2 px-4 py-3 text-sm tracking-[0.2em] uppercase transition-colors hover:bg-[color:rgba(var(--ink-rgb),0.04)] ld-press"
           style={{ borderColor: "var(--ink)", color: "var(--ink)" }}
         >
           <GoogleIcon />
@@ -132,7 +132,7 @@ function LoginPageInner() {
 
         {magicSent ? (
           <div
-            className="border px-5 py-4"
+            className="border px-5 py-4 ld-fade-up"
             style={{ borderColor: "var(--accent)", background: "rgba(var(--ink-rgb),0.03)" }}
           >
             <div className="font-serif text-lg mb-1">Check your inbox.</div>
@@ -164,7 +164,7 @@ function LoginPageInner() {
             <button
               type="submit"
               disabled={isPending || !email.trim()}
-              className="mt-3 text-sm tracking-[0.2em] uppercase px-5 py-3 border-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              className={`mt-3 text-sm tracking-[0.2em] uppercase px-5 py-3 border-2 disabled:opacity-40 disabled:cursor-not-allowed ld-press ${isPending ? "ld-pulse-brass" : ""}`}
               style={{
                 borderColor: "var(--ink)",
                 background: "var(--ink)",
