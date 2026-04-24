@@ -100,13 +100,13 @@ export default function GeneratorApp() {
           <div className="min-w-0 flex flex-col gap-10">
             {/* Editorial sub-masthead */}
             <div className="pb-8 border-b" style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
-              <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: "var(--accent)" }}>
+              <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium ld-fade-up" style={{ color: "var(--accent)" }}>
                 Vol. V — April · Twenty Twenty-Six
               </div>
-              <h2 className="font-serif text-3xl md:text-5xl leading-tight tracking-tight max-w-2xl">
+              <h2 className="font-serif text-3xl md:text-5xl leading-tight tracking-tight max-w-2xl ld-fade-up ld-fade-up-delay-1">
                 A quiet instrument for the working agent.
               </h2>
-              <p className="font-serif italic text-base mt-4 max-w-xl" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
+              <p className="font-serif italic text-base mt-4 max-w-xl ld-fade-up ld-fade-up-delay-2" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
                 Three compositions will be drafted from the particulars you provide — one Professional, one Warm, one Story.
               </p>
               <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-6 text-[10px] tracking-[0.25em] uppercase" style={{ color: "rgba(var(--ink-rgb),0.5)" }}>
@@ -139,17 +139,17 @@ export default function GeneratorApp() {
 
             {variants && (
               <section>
-                <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium" style={{ color: "var(--accent)" }}>
+                <div className="text-[10px] tracking-[0.3em] uppercase mb-3 font-medium ld-fade-up" style={{ color: "var(--accent)" }}>
                   Section III — The Drafts
                 </div>
-                <div className="flex items-baseline justify-between mb-8 gap-4 flex-wrap">
+                <div className="flex items-baseline justify-between mb-8 gap-4 flex-wrap ld-fade-up ld-fade-up-delay-1">
                   <h3 className="font-serif text-3xl leading-tight">
                     Three readings of the same house.
                   </h3>
                   <button
                     type="button"
                     onClick={handleCopyAll}
-                    className="text-[10px] tracking-[0.3em] uppercase border px-4 py-2 transition-colors"
+                    className={`text-[10px] tracking-[0.3em] uppercase border px-4 py-2 transition-colors ld-press hover:border-[color:var(--accent)] ${copiedAll ? "ld-pop" : ""}`}
                     style={
                       copiedAll
                         ? { borderColor: "var(--accent)", color: "var(--accent)", background: "transparent" }

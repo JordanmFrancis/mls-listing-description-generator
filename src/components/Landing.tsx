@@ -22,16 +22,16 @@ export default function Landing() {
         {/* Hero */}
         <section className="pb-12 md:pb-20 border-b" style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
           <div
-            className="text-[10px] tracking-[0.3em] uppercase mb-4 font-medium"
+            className="text-[10px] tracking-[0.3em] uppercase mb-4 font-medium ld-fade-up"
             style={{ color: "var(--accent)" }}
           >
             Vol. V — For working agents
           </div>
-          <h2 className="font-serif text-4xl md:text-6xl leading-[1.05] tracking-tight max-w-3xl">
+          <h2 className="font-serif text-4xl md:text-6xl leading-[1.05] tracking-tight max-w-3xl ld-fade-up ld-fade-up-delay-1">
             Three honest readings of every property, in under a minute.
           </h2>
           <p
-            className="font-serif italic text-lg md:text-xl mt-6 max-w-2xl leading-relaxed"
+            className="font-serif italic text-lg md:text-xl mt-6 max-w-2xl leading-relaxed ld-fade-up ld-fade-up-delay-2"
             style={{ color: "rgba(var(--ink-rgb),0.7)" }}
           >
             Listing Desk is an MLS description studio for real estate agents. Drop in the
@@ -39,10 +39,10 @@ export default function Landing() {
             Story version of the listing. No clichés, no invented features, no &ldquo;nestled in
             a sought-after community.&rdquo;
           </p>
-          <div className="mt-10 flex flex-wrap items-center gap-4">
+          <div className="mt-10 flex flex-wrap items-center gap-4 ld-fade-up ld-fade-up-delay-3">
             <Link
               href="/login"
-              className="text-sm tracking-[0.25em] uppercase px-6 py-3 border-2"
+              className="text-sm tracking-[0.25em] uppercase px-6 py-3 border-2 ld-press transition-colors hover:bg-[color:var(--accent)] hover:border-[color:var(--accent)]"
               style={{
                 borderColor: "var(--ink)",
                 background: "var(--ink)",
@@ -151,7 +151,7 @@ export default function Landing() {
           <div className="mt-6">
             <Link
               href="/login"
-              className="text-sm tracking-[0.25em] uppercase px-6 py-3 border-2 inline-block"
+              className="text-sm tracking-[0.25em] uppercase px-6 py-3 border-2 inline-block ld-press transition-colors hover:bg-[color:var(--accent)] hover:border-[color:var(--accent)]"
               style={{
                 borderColor: "var(--ink)",
                 background: "var(--ink)",

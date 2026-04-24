@@ -155,7 +155,7 @@ export default function GuidelinesPage() {
               type="button"
               onClick={handleSave}
               disabled={overLimit || !dirty || saving || loading}
-              className="text-sm tracking-[0.2em] uppercase px-5 py-2 border-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              className={`text-sm tracking-[0.2em] uppercase px-5 py-2 border-2 disabled:opacity-40 disabled:cursor-not-allowed ld-press ${saving ? "ld-pulse-brass" : ""}`}
               style={{
                 borderColor: "var(--ink)",
                 background: "var(--ink)",
@@ -167,14 +167,15 @@ export default function GuidelinesPage() {
             <button
               type="button"
               onClick={handleClearGuidelines}
-              className="text-[11px] tracking-[0.2em] uppercase px-3 py-2"
+              className="text-[11px] tracking-[0.2em] uppercase px-3 py-2 ld-press"
               style={{ color: "rgba(var(--ink-rgb),0.6)" }}
             >
               Clear text
             </button>
             {savedAt && !dirty && !saveError && (
               <span
-                className="font-serif italic text-sm"
+                key={savedAt}
+                className="font-serif italic text-sm ld-fade-up"
                 style={{ color: "var(--accent)" }}
                 aria-live="polite"
               >
@@ -239,7 +240,7 @@ export default function GuidelinesPage() {
               type="button"
               onClick={handleClearHistory}
               disabled={historyCount === 0}
-              className="text-sm tracking-[0.2em] uppercase px-4 py-2 border-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              className={`text-sm tracking-[0.2em] uppercase px-4 py-2 border-2 disabled:opacity-40 disabled:cursor-not-allowed ld-press transition-colors ${clearConfirm ? "ld-pop" : ""}`}
               style={{
                 borderColor: clearConfirm ? "#a82828" : "rgba(168,40,40,0.5)",
                 background: clearConfirm ? "#a82828" : "transparent",
