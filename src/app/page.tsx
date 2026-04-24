@@ -20,6 +20,11 @@ import { isApiError } from "@/lib/types";
 
 export default function Home() {
   const [variants, setVariants] = useState<Variant[] | null>(null);
+  const [generationId, setGenerationId] = useState<string | undefined>(undefined);
+  // Snapshot of the input used for the current variants — the refine API
+  // needs it as context. Kept separate from the live form state so it
+  // doesn't change out from under an in-flight refinement.
+  const [lastInput, setLastInput] = useState<ListingInput | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [historyRefresh, setHistoryRefresh] = useState(0);
@@ -48,6 +53,8 @@ export default function Home() {
       }
 
       setVariants(data.variants);
+      setGenerationId(data.generationId);
+      setLastInput(input);
 
       // Server-side /api/generate already inserted the generation into
       // the DB. Bump the sidebar so it re-fetches and picks up the new row.
@@ -120,7 +127,27 @@ export default function Home() {
                 </h3>
                 <div className="flex flex-col gap-8">
                   {variants.map((v, idx) => (
-                    <VariantCard key={idx} variant={v} index={idx} />
+                    <VariantCard
+                      key={`${v.label}-${idx}`}
+                      variant={v}
+                      index={idx}
+                      input={lastInput ?? undefined}
+                      generationId={generationId}
+                      onRefined={(newText) => {
+                        setVariants((prev) =>
+                          prev
+                            ? prev.map((pv) =>
+                                pv.label === v.label
+                                  ? { label: pv.label, text: newText }
+                                  : pv
+                              )
+                            : prev
+                        );
+                        // Server already updated the archive row; bump
+                        // the sidebar so it re-fetches the new text.
+                        setHistoryRefresh((k) => k + 1);
+                      }}
+                    />
                   ))}
                 </div>
               </section>
