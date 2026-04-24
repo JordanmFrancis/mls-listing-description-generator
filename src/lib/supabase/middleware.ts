@@ -9,11 +9,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Routes any visitor can hit without being logged in.
-const PUBLIC_ROUTES = ["/login", "/auth/callback"];
+// Routes any visitor can hit without being logged in. "/" is the landing
+// page (its own layout branches on auth state), so it's public too.
+const PUBLIC_ROUTES = ["/", "/login", "/auth/callback"];
 
 function isPublic(pathname: string): boolean {
-  return PUBLIC_ROUTES.some((r) => pathname === r || pathname.startsWith(r + "/"));
+  return PUBLIC_ROUTES.some((r) => {
+    if (r === "/") return pathname === "/";
+    return pathname === r || pathname.startsWith(r + "/");
+  });
 }
 
 export async function updateSession(request: NextRequest) {
