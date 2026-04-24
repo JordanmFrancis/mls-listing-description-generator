@@ -34,6 +34,7 @@ export default function HistorySidebar({ refreshKey }: Props) {
   const [history, setHistory] = useState<Generation[]>([]);
   const [collapsed, setCollapsed] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     let alive = true;
@@ -44,6 +45,11 @@ export default function HistorySidebar({ refreshKey }: Props) {
       alive = false;
     };
   }, [refreshKey]);
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? history.filter((g) => (g.input.address ?? "").toLowerCase().includes(q))
+    : history;
 
   return (
     <aside className="lg:border-l lg:pl-10" style={{ borderColor: "rgba(var(--ink-rgb),0.2)" }}>
@@ -73,13 +79,39 @@ export default function HistorySidebar({ refreshKey }: Props) {
 
         {!collapsed && (
           <>
+            {history.length > 0 && (
+              <div className="mb-5">
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search by address"
+                  aria-label="Search archive by address"
+                  className="w-full border-0 border-b bg-transparent py-2 font-serif text-base focus:outline-none"
+                  style={{ borderColor: "rgba(var(--ink-rgb),0.3)", color: "var(--ink)" }}
+                />
+                {q && (
+                  <div
+                    className="mt-2 text-[10px] tracking-[0.2em] uppercase"
+                    style={{ color: "rgba(var(--ink-rgb),0.5)" }}
+                  >
+                    {filtered.length} of {history.length} shown
+                  </div>
+                )}
+              </div>
+            )}
+
             {history.length === 0 ? (
               <p className="font-serif italic text-sm" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
                 Nothing composed yet. Fill in the particulars and draft your first.
               </p>
+            ) : filtered.length === 0 ? (
+              <p className="font-serif italic text-sm" style={{ color: "rgba(var(--ink-rgb),0.6)" }}>
+                Nothing matches &ldquo;{query.trim()}&rdquo;. Try another address.
+              </p>
             ) : (
               <ul className="flex flex-col gap-5">
-                {history.map((gen, i) => {
+                {filtered.map((gen, i) => {
                   const isExpanded = expandedId === gen.id;
                   return (
                     <li
